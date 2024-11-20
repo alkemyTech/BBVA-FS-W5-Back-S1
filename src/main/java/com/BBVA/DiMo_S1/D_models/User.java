@@ -49,7 +49,7 @@ public class User {
     @Column(name = "soft_delete", nullable = true)
     private LocalDateTime softDelete;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false, unique = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 }
