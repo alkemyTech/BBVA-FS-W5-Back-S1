@@ -1,16 +1,16 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
+import com.BBVA.DiMo_S1.D_dtos.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.UserDTO;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
@@ -28,5 +28,10 @@ public class UserController {
         userServiceImplementation.softDelete(idUser);
 
         return ResponseEntity.ok().body("User con ID = " + idUser + " eliminado con éxito!");
+    }
+
+    @PostMapping("/auth/register")
+    public ResponseEntity<UserDTO> registerUser(@RequestBody CreateUserDTO createUserDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(userServiceImplementation.create(createUserDTO));
     }
 }

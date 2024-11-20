@@ -1,7 +1,11 @@
 package com.BBVA.DiMo_S1.B_services.implementations;
 
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
+import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
+import com.BBVA.DiMo_S1.D_dtos.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.UserDTO;
+import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
@@ -15,6 +19,10 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    RoleRepository roleRepository;
+    @Autowired
+    RoleServiceImplementation roleServiceImplementation;
 
     //1- softDelete de un User de la BD.
     @Override
@@ -35,6 +43,25 @@ public class UserServiceImplementation implements UserService {
 
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO);
         }
+    }
+
+    @Override
+    public UserDTO create(final CreateUserDTO createUserDTO){
+        User user = new User();
+        user.setFirstName(createUserDTO.getFirstName());
+        user.setLastName(createUserDTO.getLastName());
+        user.setEmail(createUserDTO.getEmail());
+        user.setPassword(createUserDTO.getPassword());
+
+        Role role = roleServiceImplementation.findById(createUserDTO.getRoleId());
+        user.setRole(role);
+        user = userRepository.save(user);
+        return new UserDTO().fromUser(user);
+    }
+
+    @Override
+    public User findById(Long id){
+        return userRepository.findById(id).orElse(null);
     }
 
 }

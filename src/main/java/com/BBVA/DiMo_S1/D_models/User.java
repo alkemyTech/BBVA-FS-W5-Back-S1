@@ -50,6 +50,6 @@ public class User {
     private LocalDateTime softDelete;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinColumn(name = "role_id", nullable = false, unique = false)
     private Role role;
 }
