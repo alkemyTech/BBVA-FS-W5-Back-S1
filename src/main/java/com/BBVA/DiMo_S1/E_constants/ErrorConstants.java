@@ -6,4 +6,13 @@ public class ErrorConstants {
 
     public static final String DELETE_NO_VALIDO = "ERROR! El User que deseas eliminar ya fue eliminado.";
 
+    public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! No se encontro ninguna Account con ese ID";
+
+    public static final String DELETE_NO_VALIDO_ACCOUNT = "ERROR! La account que deseas eliminar ya fue eliminada.";
+
+    public static final String ACCOUNT_YA_EXISTENTE = "ERROR! Ese ID ya fue ingresado en otra Account.";
+
+
+
+
 }
