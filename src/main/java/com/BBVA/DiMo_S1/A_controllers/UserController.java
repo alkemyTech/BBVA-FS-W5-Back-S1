@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Validated
 @RestController
 @RequestMapping("users")
@@ -33,5 +35,10 @@ public class UserController {
     @PostMapping("/auth/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody CreateUserDTO createUserDTO){
         return ResponseEntity.status(HttpStatus.CREATED).body(userServiceImplementation.create(createUserDTO));
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>>getAll(){
+        return ResponseEntity.ok(userServiceImplementation.getAll());
     }
 }

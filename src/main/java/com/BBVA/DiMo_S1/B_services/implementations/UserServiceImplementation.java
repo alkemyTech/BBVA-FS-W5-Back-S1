@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -62,6 +64,28 @@ public class UserServiceImplementation implements UserService {
     @Override
     public User findById(Long id){
         return userRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<UserDTO> getAll(){
+        List<User> listUser = userRepository.findAll();
+        return listUser.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDTO convertToDto(User user){
+        UserDTO userDTO = new UserDTO();
+
+        userDTO.setId(user.getId());
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setPassword(user.getPassword());
+        userDTO.setCreationDate(user.getCreationDate());
+        userDTO.setUpdateDate(user.getUpdateDate());
+        userDTO.setRole(user.getRole().getId());
+        return userDTO;
+
     }
 
 }
