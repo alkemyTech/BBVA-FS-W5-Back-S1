@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_models;
 
-import com.BBVA.DiMo_S1.D_models.Enums.enumCurrency;
+import com.BBVA.DiMo_S1.E_constants.Enums.enumCurrency;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -9,10 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Builder
 @Data
@@ -32,22 +30,22 @@ public class Account {
     private Long cbu;
 
     @Column(name = "currency")
-    @NotNull(message = "La divisa no debe estar nula")
+    @NotNull(message = "La divisa no debe ser nula.")
     private enumCurrency currency;
 
     @Column(name = "transaction_limit")
-    @NotNull(message = "El limite de transaccion no debe estar nulo")
+    @NotNull(message = "El limite de transaccion no debe ser nulo.")
     private double transactionLimit;
 
     @Column(name = "balance")
-    @NotNull(message = "El balance no debe estar nulo")
+    @NotNull(message = "El balance no debe ser nulo.")
     private double balance;
 
-    @Column(updatable = false, name = "create_date", nullable = false)
+    @Column(updatable = false, name = "creation_date", nullable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "update_date", nullable = false)
+    @Column(name = "update_date", nullable = true)
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
