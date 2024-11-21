@@ -2,6 +2,8 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.CreateAccountDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.validation.Valid;
@@ -33,10 +35,8 @@ public class AccountController {
 
     //2- createAccount en la BD
     @PostMapping("/create")
-    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account){
-        Account accountCreada = accountServiceImplementation.createAccount(account);
+    public ResponseEntity<Account> createAccount(@Valid @RequestBody CreateAccountDTO createAccountDTO){
+        Account accountCreada = accountServiceImplementation.createAccount(createAccountDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(accountCreada);
     }
-
-
 }

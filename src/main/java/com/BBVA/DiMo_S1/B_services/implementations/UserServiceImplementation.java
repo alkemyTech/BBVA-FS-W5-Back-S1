@@ -9,13 +9,15 @@ import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
 
     @Autowired
@@ -26,6 +28,9 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     RoleServiceImplementation roleServiceImplementation;
+
+
+    private final PasswordEncoder passwordEncoder;
 
     //1- softDelete de un User de la BD.
     @Override
@@ -51,13 +56,19 @@ public class UserServiceImplementation implements UserService {
     @Override
     public UserDTO create(final CreateUserDTO createUserDTO) throws CustomException{
 
+        //Inicializamos el usuario de forma vacia.
         User user = User.builder().build();
 
+        //Encriptamos la contraseña que viene por el body.
+        createUserDTO.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
+
+        //En caso de que el email sea valido...
         if (userRepository.findByEmail(createUserDTO.getEmail()).isEmpty()) {
 
             createUserDTO.guardarDTO(user);
         } else {
 
+            //Si el email ya existe...
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
         }
 
