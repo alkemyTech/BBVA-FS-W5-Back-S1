@@ -19,7 +19,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long id;
+    private Long id;
 
     @NotNull(message = "El nombre del Usuario no puede ser nulo.")
     @Column(name = "first_name", nullable = false)
@@ -42,7 +42,7 @@ public class User {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "update_date", nullable = false)
+    @Column(name = "update_date", nullable = true, updatable = true, insertable = false)
     @UpdateTimestamp
     private LocalDateTime updateDate;
 
