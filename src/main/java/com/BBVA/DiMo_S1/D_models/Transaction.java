@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_models;
 
-import com.BBVA.DiMo_S1.D_models.Enums.TransactionType;
+import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
