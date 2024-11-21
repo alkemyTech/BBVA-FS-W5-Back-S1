@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_models;
 
-import com.BBVA.DiMo_S1.E_constants.Enums.enumCurrency;
+import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -31,7 +31,7 @@ public class Account {
 
     @Column(name = "currency")
     @NotNull(message = "La divisa no debe ser nula.")
-    private enumCurrency currency;
+    private CurrencyType currency;
 
     @Column(name = "transaction_limit")
     @NotNull(message = "El limite de transaccion no debe ser nulo.")
