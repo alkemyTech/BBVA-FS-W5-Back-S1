@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -18,13 +20,20 @@ public class AccountDTO {
     private CurrencyType currency;
     private double transactionLimit;
     private double balance ;
+    private String cbu;
+    private LocalDateTime creationDate;
+    private UserDTO user;
 
 
-    public AccountDTO fromAccount(final Account account){
+
+    public AccountDTO(final Account account){
         this.currency = account.getCurrency();
         this.transactionLimit = account.getTransactionLimit();
         this.balance = account.getBalance();
-        return this;
+        this.cbu = account.getCbu();
+        this.creationDate = account.getCreationDate();
+        this.user = new UserDTO(account.getUser());
+
     }
 
 

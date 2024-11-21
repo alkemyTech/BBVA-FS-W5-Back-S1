@@ -4,20 +4,21 @@ import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
 
     @Autowired
@@ -28,9 +29,6 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     RoleServiceImplementation roleServiceImplementation;
-
-
-    private final PasswordEncoder passwordEncoder;
 
     //1- softDelete de un User de la BD.
     @Override
@@ -56,19 +54,11 @@ public class UserServiceImplementation implements UserService {
     @Override
     public UserDTO create(final CreateUserDTO createUserDTO) throws CustomException{
 
-        //Inicializamos el usuario de forma vacia.
         User user = User.builder().build();
 
-        //Encriptamos la contraseña que viene por el body.
-        createUserDTO.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
-
-        //En caso de que el email sea valido...
         if (userRepository.findByEmail(createUserDTO.getEmail()).isEmpty()) {
-
             createUserDTO.guardarDTO(user);
         } else {
-
-            //Si el email ya existe...
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
         }
 
@@ -82,4 +72,26 @@ public class UserServiceImplementation implements UserService {
     public User findById(Long id){
         return userRepository.findById(id).orElse(null);
     }
+
+    @Override
+    public List<FullUserDto> getAll(){
+        List<User> listUser = userRepository.findAll();
+        return listUser.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public FullUserDto convertToDto(User user){
+        FullUserDto fullUserDto = new FullUserDto();
+
+        fullUserDto.setFirstName(user.getFirstName());
+        fullUserDto.setLastName(user.getLastName());
+        fullUserDto.setEmail(user.getEmail());
+        fullUserDto.setCreationDate(String.valueOf(user.getCreationDate()));
+        fullUserDto.setUpdateDate(String.valueOf(user.getUpdateDate()));
+        fullUserDto.setRoleId(user.getRole().getId());
+        return fullUserDto;
+
+    }
+
+
 }

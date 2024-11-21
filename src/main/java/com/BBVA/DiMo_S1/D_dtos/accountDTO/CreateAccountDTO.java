@@ -11,11 +11,9 @@ import lombok.Data;
 @Data
 public class CreateAccountDTO {
     private CurrencyType currency;
-    private User user;
+    private Long userId;
 
     public void guardarDTO (final Account account) {
         account.setCurrency(this.currency);
-        account.setUser(this.user);
-
     }
 }

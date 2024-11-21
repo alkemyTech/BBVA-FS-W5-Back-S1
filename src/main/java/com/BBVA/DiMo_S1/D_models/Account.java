@@ -27,7 +27,7 @@ public class Account {
 
     @Column(name ="CBU", unique = true)
     @NotNull
-    private Long cbu;
+    private String cbu;
 
     @Column(name = "currency")
     @NotNull(message = "La divisa no debe ser nula.")

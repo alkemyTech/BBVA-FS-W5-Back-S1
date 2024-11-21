@@ -34,9 +34,11 @@ public class AccountController {
     }
 
     //2- createAccount en la BD
-    @PostMapping("/create")
-    public ResponseEntity<Account> createAccount(@Valid @RequestBody CreateAccountDTO createAccountDTO){
-        Account accountCreada = accountServiceImplementation.createAccount(createAccountDTO);
+    @PostMapping("/accounts")
+    public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody CreateAccountDTO createAccountDTO){
+        AccountDTO accountCreada = accountServiceImplementation.createAccount(createAccountDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(accountCreada);
     }
+
+
 }

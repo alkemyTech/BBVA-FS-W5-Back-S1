@@ -14,11 +14,11 @@ public class UserDTO {
     private String email;
     private LocalDateTime creationDate;
 
-    public UserDTO fromUser(final User user){
+    public UserDTO(final User user){
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();
         this.creationDate = user.getCreationDate();
-        return this;
+
     }
 }
