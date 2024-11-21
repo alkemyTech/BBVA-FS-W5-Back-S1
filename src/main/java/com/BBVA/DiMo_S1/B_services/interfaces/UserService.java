@@ -1,6 +1,7 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.User;
 
@@ -12,7 +13,7 @@ public interface UserService {
     void softDelete (final long idUser);
     UserDTO create(final CreateUserDTO createUserDTO);
     User findById(Long id);
-    List<UserDTO>getAll();
-    UserDTO convertToDto(User user);
+    List<FullUserDto>getAll();
+    FullUserDto convertToDto(User user);
 
 }

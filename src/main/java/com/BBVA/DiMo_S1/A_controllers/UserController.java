@@ -2,6 +2,7 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.validation.Valid;
@@ -38,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>>getAll(){
+    public ResponseEntity<List<FullUserDto>>getAll(){
         return ResponseEntity.ok(userServiceImplementation.getAll());
     }
 }

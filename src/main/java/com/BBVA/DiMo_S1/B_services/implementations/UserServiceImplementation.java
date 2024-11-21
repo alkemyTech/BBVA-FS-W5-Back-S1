@@ -4,6 +4,7 @@ import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
@@ -73,30 +74,26 @@ public class UserServiceImplementation implements UserService {
     public User findById(Long id){
         return userRepository.findById(id).orElse(null);
     }
-<<<<<<< HEAD
 
     @Override
-    public List<UserDTO> getAll(){
+    public List<FullUserDto> getAll(){
         List<User> listUser = userRepository.findAll();
         return listUser.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     @Override
-    public UserDTO convertToDto(User user){
-        UserDTO userDTO = new UserDTO();
+    public FullUserDto convertToDto(User user){
+        FullUserDto fullUserDto = new FullUserDto();
 
-        userDTO.setId(user.getId());
-        userDTO.setFirstName(user.getFirstName());
-        userDTO.setLastName(user.getLastName());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setPassword(user.getPassword());
-        userDTO.setCreationDate(user.getCreationDate());
-        userDTO.setUpdateDate(user.getUpdateDate());
-        userDTO.setRole(user.getRole().getId());
-        return userDTO;
+        fullUserDto.setFirstName(user.getFirstName());
+        fullUserDto.setLastName(user.getLastName());
+        fullUserDto.setEmail(user.getEmail());
+        fullUserDto.setCreationDate(String.valueOf(user.getCreationDate()));
+        fullUserDto.setUpdateDate(String.valueOf(user.getUpdateDate()));
+        fullUserDto.setRoleId(user.getRole().getId());
+        return fullUserDto;
 
     }
 
-=======
->>>>>>> eaa80098a9368009c6aa1385c6e6b5dbaabac8e3
+
 }
