@@ -53,6 +53,6 @@ public class Account {
     private LocalDateTime softDelete;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_Id", nullable = false)
+    @JoinColumn(name = "user_ID", nullable = false)
     private User user;
 }
