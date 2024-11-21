@@ -1,4 +1,4 @@
-package com.BBVA.DiMo_S1.D_dtos;
+package com.BBVA.DiMo_S1.D_dtos.accountDTO;
 
 import com.BBVA.DiMo_S1.E_constants.Enums.enumCurrency;
 import lombok.AllArgsConstructor;
