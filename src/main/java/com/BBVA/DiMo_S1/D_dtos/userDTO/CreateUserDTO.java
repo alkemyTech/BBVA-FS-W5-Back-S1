@@ -11,9 +11,9 @@ public class CreateUserDTO {
     private String password;
 
     public void guardarDTO (final User user) {
-        user.setFirstName(this.getFirstName());
-        user.setLastName(this.getLastName());
-        user.setEmail(this.getEmail());
-        user.setPassword(this.getPassword());
+        user.setFirstName(this.firstName);
+        user.setLastName(this.lastName);
+        user.setEmail(this.email);
+        user.setPassword(this.password);
     }
 }
