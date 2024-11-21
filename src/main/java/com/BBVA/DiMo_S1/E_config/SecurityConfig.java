@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final UserSecurityService userSecurityService;
 
     private static final String[] WHITE_LIST_URL = {
-            "users/auth/register/**",
+            "users/auth/register/**","users/users/**",
             "/v1/api-docs/",
             "/v2/api-docs/",
             "/v3/api-docs/**",
