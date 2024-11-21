@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_dtos;
 
-import com.BBVA.DiMo_S1.D_models.Enums.enumCurrency;
+import com.BBVA.DiMo_S1.E_constants.Enums.enumCurrency;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

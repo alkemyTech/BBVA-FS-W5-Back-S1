@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Service
 
-public class AccountServiceImpl implements AccountService {
+public class AccountServiceImplementation implements AccountService {
 
     private final AccountRepository accountRepository;
 
