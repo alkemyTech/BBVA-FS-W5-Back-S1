@@ -2,6 +2,7 @@ package com.BBVA.DiMo_S1.B_services.implementations;
 
 import com.BBVA.DiMo_S1.B_services.interfaces.AccountService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.CreateAccountDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
@@ -41,9 +42,12 @@ public class AccountServiceImplementation implements AccountService {
 
 
     @Override
-    public Account createAccount(Account account) throws CustomException {
-        
-        return accountRepository.save(account);
+    public Account createAccount(CreateAccountDTO createAccountDTO) throws CustomException {
+
+        Account account = Account.builder().build();
+
+
+
     }
 
 }
