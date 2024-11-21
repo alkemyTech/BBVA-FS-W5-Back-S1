@@ -4,6 +4,7 @@ import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -69,4 +72,26 @@ public class UserServiceImplementation implements UserService {
     public User findById(Long id){
         return userRepository.findById(id).orElse(null);
     }
+
+    @Override
+    public List<FullUserDto> getAll(){
+        List<User> listUser = userRepository.findAll();
+        return listUser.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public FullUserDto convertToDto(User user){
+        FullUserDto fullUserDto = new FullUserDto();
+
+        fullUserDto.setFirstName(user.getFirstName());
+        fullUserDto.setLastName(user.getLastName());
+        fullUserDto.setEmail(user.getEmail());
+        fullUserDto.setCreationDate(String.valueOf(user.getCreationDate()));
+        fullUserDto.setUpdateDate(String.valueOf(user.getUpdateDate()));
+        fullUserDto.setRoleId(user.getRole().getId());
+        return fullUserDto;
+
+    }
+
+
 }

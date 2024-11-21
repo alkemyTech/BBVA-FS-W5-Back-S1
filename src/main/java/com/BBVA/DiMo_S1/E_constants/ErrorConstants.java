@@ -14,5 +14,7 @@ public class ErrorConstants {
 
     public static final String EMAIL_INCORRECTO = "ERROR! El email ingresado ya existe!.";
 
+    public static final String CREDENCIALES_INVALIDAS = "ERROR! Credenciales invalidas!";
+
 
 }
