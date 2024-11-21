@@ -54,10 +54,8 @@ public class UserServiceImplementation implements UserService {
         User user = User.builder().build();
 
         if (userRepository.findByEmail(createUserDTO.getEmail()).isEmpty()) {
-
             createUserDTO.guardarDTO(user);
         } else {
-
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
         }
 
