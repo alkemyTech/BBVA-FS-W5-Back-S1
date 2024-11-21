@@ -3,14 +3,15 @@ package com.BBVA.DiMo_S1.B_services.implementations;
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.CreateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.UserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,8 +22,10 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     UserRepository userRepository;
+
     @Autowired
     RoleRepository roleRepository;
+
     @Autowired
     RoleServiceImplementation roleServiceImplementation;
 
@@ -48,14 +51,19 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserDTO create(final CreateUserDTO createUserDTO){
-        User user = new User();
-        user.setFirstName(createUserDTO.getFirstName());
-        user.setLastName(createUserDTO.getLastName());
-        user.setEmail(createUserDTO.getEmail());
-        user.setPassword(createUserDTO.getPassword());
+    public UserDTO create(final CreateUserDTO createUserDTO) throws CustomException{
 
-        Role role = roleServiceImplementation.findById(createUserDTO.getRoleId());
+        User user = User.builder().build();
+
+        if (userRepository.findByEmail(createUserDTO.getEmail()).isEmpty()) {
+
+            createUserDTO.guardarDTO(user);
+        } else {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
+        }
+
+        Role role = roleServiceImplementation.findById(2l);
         user.setRole(role);
         user = userRepository.save(user);
         return new UserDTO().fromUser(user);
@@ -65,6 +73,7 @@ public class UserServiceImplementation implements UserService {
     public User findById(Long id){
         return userRepository.findById(id).orElse(null);
     }
+<<<<<<< HEAD
 
     @Override
     public List<UserDTO> getAll(){
@@ -88,4 +97,6 @@ public class UserServiceImplementation implements UserService {
 
     }
 
+=======
+>>>>>>> eaa80098a9368009c6aa1385c6e6b5dbaabac8e3
 }

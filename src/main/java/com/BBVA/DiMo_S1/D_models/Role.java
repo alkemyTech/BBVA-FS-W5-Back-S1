@@ -6,8 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Builder
@@ -18,32 +21,24 @@ import java.util.Date;
 @Entity
 @Table(name = "Roles")
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     @Column(name = "name")
-    @NotNull(message = "el nombre no debe estar nulo")
+    @NotNull(message = "El nombre del Role no debe ser nulo.")
     private String name;
 
     @Column(name = "description")
     private String description;
 
-    @Column(updatable = false)
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
-    private Date creationDate;
+    @Column(name = "creation_date", updatable = false, nullable = false)
+    @CreationTimestamp
+    private LocalDateTime creationDate;
 
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
-    private Date updateDate;
-
-    @PrePersist
-    protected void onCreate(){
-        this.creationDate = new Date();
-    }
-
-    @PreUpdate
-    protected void onUpdate(){
-        this.updateDate = new Date();
-    }
+    @Column(name = "update_date", nullable = true)
+    @UpdateTimestamp
+    private LocalDateTime updateDate;
 }

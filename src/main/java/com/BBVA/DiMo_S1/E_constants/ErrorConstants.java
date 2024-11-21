@@ -12,7 +12,7 @@ public class ErrorConstants {
 
     public static final String ACCOUNT_YA_EXISTENTE = "ERROR! Ese ID ya fue ingresado en otra Account.";
 
-
+    public static final String EMAIL_INCORRECTO = "ERROR! El email ingresado ya existe!.";
 
 
 }

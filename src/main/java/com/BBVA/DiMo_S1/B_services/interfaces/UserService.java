@@ -1,7 +1,7 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
-import com.BBVA.DiMo_S1.D_dtos.CreateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.UserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.User;
 
 import java.util.List;

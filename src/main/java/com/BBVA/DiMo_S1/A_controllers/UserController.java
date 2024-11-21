@@ -1,8 +1,8 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
-import com.BBVA.DiMo_S1.D_dtos.CreateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.UserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
