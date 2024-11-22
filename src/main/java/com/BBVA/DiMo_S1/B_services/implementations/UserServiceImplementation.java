@@ -15,6 +15,8 @@ import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -83,7 +85,9 @@ public class UserServiceImplementation implements UserService {
         } else {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
         }
-
+        //hasheo de password
+        String passHash = BCrypt.hashpw(user.getPassword(),BCrypt.gensalt());
+        user.setPassword(passHash);
         Role role = roleServiceImplementation.findById(2l);
         user.setRole(role);
         user = userRepository.save(user);
