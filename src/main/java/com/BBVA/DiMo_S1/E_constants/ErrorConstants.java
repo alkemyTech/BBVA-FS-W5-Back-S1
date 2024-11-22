@@ -16,5 +16,7 @@ public class ErrorConstants {
 
     public static final String CREDENCIALES_INVALIDAS = "ERROR! Credenciales invalidas!";
 
+    public static final String OPERACION_NO_VALIDA = "ERROR! No se puede crear una cuenta nueva actualmente.";
 
+    public static final String OPERACION_SOLO_ADMIN = "ERROR! No tenes permiso para dar de baja a un User distinto al tuyo.";
 }
