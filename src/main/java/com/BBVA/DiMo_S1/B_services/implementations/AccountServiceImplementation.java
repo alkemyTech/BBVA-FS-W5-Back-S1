@@ -46,4 +46,10 @@ public class AccountServiceImplementation implements AccountService {
         return accountRepository.save(account);
     }
 
+    @Override
+    public Account getAccountByEmail(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
+    }
+
 }

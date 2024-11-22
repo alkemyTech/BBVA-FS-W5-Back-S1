@@ -9,4 +9,5 @@ public interface AccountService {
     //2- createAccount
     Account createAccount(Account account);
 
+    Account getAccountByEmail(String email);
 }
