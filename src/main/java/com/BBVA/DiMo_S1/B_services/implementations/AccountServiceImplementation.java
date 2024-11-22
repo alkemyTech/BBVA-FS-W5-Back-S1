@@ -4,9 +4,7 @@ import com.BBVA.DiMo_S1.B_services.interfaces.AccountService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-
 import com.BBVA.DiMo_S1.D_models.Account;
-
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
@@ -14,6 +12,7 @@ import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.Random;
 import java.time.LocalDateTime;
 
@@ -25,12 +24,7 @@ public class AccountServiceImplementation implements AccountService {
     private UserRepository userRepository;
 
     @Autowired
-    private final AccountRepository accountRepository;
-
-    @Autowired
-    public AccountServiceImplementation(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
-    }
+    private AccountRepository accountRepository;
 
     //1- softDelete de un User de la BD.
     @Override
@@ -49,40 +43,50 @@ public class AccountServiceImplementation implements AccountService {
         }
     }
 
-
     @Override
-    public AccountDTO createAccount( final Long idUsuario, CurrencyType currencyType){
+    public AccountDTO createAccount(final Long idUsuario, CurrencyType currencyType) {
 
-        if(accountRepository.getByIdUser())
+        List<Account> listaCuentas = accountRepository.getByIdUser(idUsuario);
 
-        Account account = Account.builder().build();
+        AccountDTO accountDTO;
 
-        User user = userRepository.getById(idUsuario);
+        if (listaCuentas.isEmpty() || (listaCuentas.size() == 1 && listaCuentas.get(0).
+                getCurrency().equals(CurrencyType.ARS))) {
 
-        account.setBalance(0);
+            Account account = Account.builder().build();
 
-        account.setCbu(generateCBU());
+            User user = userRepository.getById(idUsuario);
 
-        account.setCurrency(currencyType);
+            account.setUser(user);
 
-        if(currencyType.equals(CurrencyType.ARS)){
-            account.setTransactionLimit(300000);
+            account.setBalance(0);
+
+            account.setCbu(generateCBU());
+
+            account.setCurrency(currencyType);
+
+            if (currencyType.equals(CurrencyType.ARS)) {
+
+                account.setTransactionLimit(300000);
+
+            } else {
+
+                account.setTransactionLimit(1000);
+            }
+
+            Account accountGuardada = accountRepository.save(account);
+
+            accountDTO = new AccountDTO(accountGuardada);
+
         } else {
-            account.setTransactionLimit(1000);
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.OPERACION_NO_VALIDA);
         }
 
-        AccountDTO accountDTO = new AccountDTO(account);
-
-
-
+        return accountDTO;
     }
 
-
-
-
-
-    @Override
-    public String generateCBU() {
+    private String generateCBU() {
         Random rand = new Random();
         // Generar código de banco de 3 dígitos (por ejemplo, Banco Nación: 001)
         String banco = String.format("%03d", rand.nextInt(1000));

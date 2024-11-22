@@ -12,9 +12,6 @@ public interface AccountService {
     //2- createAccount
     AccountDTO createAccount( final Long idUsuario, CurrencyType currencyType);
 
-    //3- creacion del CBU
-    String generateCBU();
-
 
 
 }

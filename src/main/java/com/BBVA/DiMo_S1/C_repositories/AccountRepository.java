@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    @Query("SELECT ac FROM Account ac JOIN FETCH ac.user u WHERE u.id = :idUser")
+    @Query("SELECT ac FROM Account ac JOIN FETCH ac.user u JOIN FETCH u.role WHERE u.id = :idUser")
     List<Account> getByIdUser(@Param("idUser") long idUser);
 
 
