@@ -24,8 +24,6 @@ public class AccountDTO {
     private LocalDateTime creationDate;
     private UserDTO user;
 
-
-
     public AccountDTO(final Account account){
         this.currency = account.getCurrency();
         this.transactionLimit = account.getTransactionLimit();
@@ -33,10 +31,5 @@ public class AccountDTO {
         this.cbu = account.getCbu();
         this.creationDate = account.getCreationDate();
         this.user = new UserDTO(account.getUser());
-
     }
-
-
-
-
 }
