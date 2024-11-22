@@ -17,9 +17,8 @@ import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,53 +36,7 @@ public class TransactionServiceImplementation implements TransactionService {
     @Autowired
     private JwtService jwtService;
 
-    @Override
-    public void sendArs(TransactionDTO transactionDTO, String token) {
-        // Obtener el ID del usuario emisor del token
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        // Verificar que el emisor exista y tenga balance suficiente
-        var senderAccount = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta emisora no encontrada."));
-        if (senderAccount.getBalance() < transactionDTO.getAmount()) {
-            throw new IllegalArgumentException("Saldo insuficiente.");
-        }
-        if (transactionDTO.getAmount() > senderAccount.getTransactionLimit()) {
-            throw new IllegalArgumentException("El monto excede el límite permitido.");
-        }
-
-        // Verificar que la cuenta destinataria exista
-        var recipientAccount = accountRepository.findByCbu(transactionDTO.getCuentaDestino())
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta receptora no encontrada."));
-
-        // Crear y guardar la transacción de "payment" para el emisor
-        Transaction senderTransaction = Transaction.builder()
-                .amount(transactionDTO.getAmount())
-                .type(TransactionType.payment)
-                .description(transactionDTO.getDescription())
-                .transactionDate(transactionDTO.getTransactionDate())
-                .account(senderAccount)
-                .build();
-        transactionRepository.save(senderTransaction);
-
-    // Crear y guardar la transacción de "income" para el receptor
-    Transaction recipientTransaction = Transaction.builder()
-            .amount(transactionDTO.getAmount())
-            .type(TransactionType.deposit)
-            .description("Transferencia recibida de " + email)
-            .transactionDate(transactionDTO.getTransactionDate())
-            .account(recipientAccount)
-            .build();
-        transactionRepository.save(recipientTransaction);
-
-    // Actualizar los balances de las cuentas
-        senderAccount.setBalance(senderAccount.getBalance() - transactionDTO.getAmount());
-        recipientAccount.setBalance(recipientAccount.getBalance() + transactionDTO.getAmount());
-        accountRepository.save(senderAccount);
-        accountRepository.save(recipientAccount);
-}
-
-    public TransactionDTO sendUsd (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
+    public TransactionDTO sendMoney (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
 
         //Inicializamos la transaccion vacia.
         Transaction transaction = Transaction.builder().build();
@@ -91,14 +44,60 @@ public class TransactionServiceImplementation implements TransactionService {
         //Extraemos el User autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
-        //Antes de realizar cualquier tipo de validación, validamos: Si el User autenticado tiene cuenta en USD,
-        //si el balance es suficiente y si el monto es correcto.
-        Optional <Account> accountEmisora = accountRepository.getUsdAccountByIdUser(userSecurityDTO.getId());
+        //Obtenemos la lista de cuentas del User autenticado
+        List <Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
 
-        if (accountEmisora.isEmpty() || simpleTransactionDTO.getAmount() > accountEmisora.get().getTransactionLimit()
-        || accountEmisora.get().getBalance() < simpleTransactionDTO.getAmount()) {
+        //Validamos en primer lugar que tenga cuentas asociadas.
+        if (listAccounts.isEmpty()) {
 
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+        }
+
+        //Validamos cual es la accion que quiere realizar el User
+        Optional <Account> accountEmisora;
+
+        //Si quiere enviar dolares...
+        if (request.getRequestURI().contains("transactions/sendUsd")) {
+
+            //Buscamos en la lista la cuenta en USD.
+            accountEmisora = listAccounts.stream()
+                    .filter(account -> account.getCurrency() == CurrencyType.USD)
+                    .findFirst();
+
+            //Si no tiene cuenta lanzamos excepcion...
+            if (accountEmisora.isEmpty()) {
+
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+
+            } else {
+
+                //Si tiene cuenta, hay q ver si la transaccion se puede realizar...
+                if (simpleTransactionDTO.getAmount() > accountEmisora.get().getBalance() ||
+                        simpleTransactionDTO.getAmount() > accountEmisora.get().getTransactionLimit()) {
+                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+                }
+            }
+        } else  {
+
+            //Si quiere enviar pesos..
+            //Buscamos en la lista la cuenta en ARS.
+            accountEmisora = listAccounts.stream()
+                    .filter(account -> account.getCurrency() == CurrencyType.ARS)
+                    .findFirst();
+
+            //Si no tiene cuenta lanzamos excepcion...
+            if (accountEmisora.isEmpty()) {
+
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+
+            } else {
+
+                //Si tiene cuenta, hay q ver si la transaccion se puede realizar...
+                if (simpleTransactionDTO.getAmount() > accountEmisora.get().getBalance() ||
+                        simpleTransactionDTO.getAmount() > accountEmisora.get().getTransactionLimit()) {
+                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+                }
+            }
         }
 
         //Si la cuenta esta en condiciones...
@@ -117,7 +116,7 @@ public class TransactionServiceImplementation implements TransactionService {
             if (accountDestino.getUser().getId() != userSecurityDTO.getId()) {
 
                 //Verificamos el tipo de cuenta a la cual se desea enviar el dinero..
-                if (accountDestino.getCurrency().equals(CurrencyType.USD)) {
+                if (accountEmisora.get().getCurrency().equals(accountDestino.getCurrency())) {
 
                     //Realizamos transferencia...
 
