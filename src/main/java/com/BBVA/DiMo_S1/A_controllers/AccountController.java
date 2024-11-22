@@ -3,6 +3,7 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
@@ -48,5 +49,10 @@ public class AccountController {
                 CurrencyType.valueOf(currencyType.replaceAll("\"", "")));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(accountCreada);
+    }
+    @GetMapping("/balance")
+    public ResponseEntity<BalanceDto> obtainBalance(HttpServletRequest request){
+        
+        return ResponseEntity.ok().body(accountServiceImplementation.obtainBalance(request));
     }
 }

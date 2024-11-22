@@ -39,7 +39,8 @@ public class TransactionServiceImplementation implements TransactionService {
     public TransactionDTO sendMoney (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
 
         //Inicializamos la transaccion vacia.
-        Transaction transaction = Transaction.builder().build();
+        Transaction transactionEmisor = Transaction.builder().build();
+        Transaction transactionDestino = Transaction.builder().build();
 
         //Extraemos el User autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
@@ -133,10 +134,15 @@ public class TransactionServiceImplementation implements TransactionService {
                     accountRepository.save(accountEmisora.get());
 
                     //Seteamos los datos de la transaccion
-                    transaction.setDescription(simpleTransactionDTO.getDescription());
-                    transaction.setAmount(simpleTransactionDTO.getAmount());
-                    transaction.setType(TransactionType.payment);
-                    transaction.setAccount(accountDestino);
+                    transactionEmisor.setDescription(simpleTransactionDTO.getDescription());
+                    transactionEmisor.setAmount(simpleTransactionDTO.getAmount());
+                    transactionEmisor.setType(TransactionType.payment);
+                    transactionEmisor.setAccount(accountEmisora.get());
+
+                    transactionDestino.setDescription(simpleTransactionDTO.getDescription());
+                    transactionDestino.setAmount(simpleTransactionDTO.getAmount());
+                    transactionDestino.setType(TransactionType.deposit);
+                    transactionDestino.setAccount(accountDestino);
 
                 } else {
 
@@ -153,7 +159,8 @@ public class TransactionServiceImplementation implements TransactionService {
         }
 
         //Si sale bien la transaccion, la guardamos en la BD.
-        Transaction transactionGuardada = transactionRepository.save(transaction);
+        Transaction transactionGuardada = transactionRepository.save(transactionEmisor);
+        transactionRepository.save(transactionDestino);
 
         TransactionDTO transactionDTO = new TransactionDTO(transactionGuardada);
 
