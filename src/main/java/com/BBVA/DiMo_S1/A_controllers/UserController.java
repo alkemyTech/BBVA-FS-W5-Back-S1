@@ -1,11 +1,13 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
+import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
+import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,6 +29,9 @@ public class UserController {
     UserServiceImplementation userServiceImplementation;
 
     @Autowired
+    AccountServiceImplementation accountServiceImplementation;
+
+    @Autowired
     JwtService jwtService;
 
     //1- softDelete de un User de la BD.
@@ -43,7 +48,12 @@ public class UserController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<UserDTO> registerUser(@RequestBody CreateUserDTO createUserDTO){
-        return ResponseEntity.status(HttpStatus.CREATED).body(userServiceImplementation.create(createUserDTO));
+
+        UserDTO userDTO = new UserDTO();
+        userDTO = userServiceImplementation.create(createUserDTO);
+        accountServiceImplementation.createAccount(userDTO.getId(), CurrencyType.ARS);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
 
     @GetMapping("/users")
