@@ -39,7 +39,7 @@ public class UserController {
     public ResponseEntity<String> softDelete (HttpServletRequest request, @Valid @PathVariable @NotNull
             (message = "El ID del User no puede ser nulo.") long idUser) throws CustomException {
 
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         userServiceImplementation.softDelete(request, idUser);
 

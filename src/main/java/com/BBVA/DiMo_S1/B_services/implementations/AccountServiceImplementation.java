@@ -17,7 +17,6 @@ import java.util.Random;
 import java.time.LocalDateTime;
 
 @Service
-
 public class AccountServiceImplementation implements AccountService {
 
     @Autowired
@@ -50,8 +49,10 @@ public class AccountServiceImplementation implements AccountService {
 
         AccountDTO accountDTO;
 
-        if (listaCuentas.isEmpty() || (listaCuentas.size() == 1 && listaCuentas.get(0).
-                getCurrency().equals(CurrencyType.ARS))) {
+        boolean existeCuentaEnPesos = listaCuentas.size() == 1 && listaCuentas.get(0).
+                getCurrency().equals(CurrencyType.ARS);
+
+        if (listaCuentas.isEmpty() || (existeCuentaEnPesos && !currencyType.equals(CurrencyType.ARS))) {
 
             Account account = Account.builder().build();
 

@@ -3,17 +3,13 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.CreateAccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
-import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
