@@ -1,6 +1,7 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
+import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
@@ -33,6 +34,9 @@ public class UserController {
     AccountServiceImplementation accountServiceImplementation;
 
     @Autowired
+    AuthServiceImplementation authServiceImplementation;
+
+    @Autowired
     JwtService jwtService;
 
     //1- softDelete de un User de la BD.
@@ -48,13 +52,13 @@ public class UserController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody CreateUserDTO createUserDTO){
+    public ResponseEntity<?> registerUser(@RequestBody CreateUserDTO createUserDTO){
 
-        UserDTO userDTO = new UserDTO();
-        userDTO = userServiceImplementation.create(createUserDTO);
+        UserDTO userDTO = userServiceImplementation.create(createUserDTO);
         accountServiceImplementation.createAccount(userDTO.getId(), CurrencyType.ARS);
+        authServiceImplementation.login(userDTO.getEmail(), createUserDTO.getPassword());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
+        return ResponseEntity.ok(authServiceImplementation.login(userDTO.getEmail(), createUserDTO.getPassword()));
     }
 
     @GetMapping("/users")
