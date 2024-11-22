@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Random;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImplementation implements AccountService {
@@ -107,4 +108,5 @@ public class AccountServiceImplementation implements AccountService {
         // Retornar el CBU completo (22 dígitos)
         return cbuBase;
     }
+
 }

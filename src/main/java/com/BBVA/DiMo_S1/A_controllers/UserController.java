@@ -2,6 +2,7 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
@@ -60,4 +61,13 @@ public class UserController {
     public ResponseEntity<List<FullUserDto>>getAll(){
         return ResponseEntity.ok(userServiceImplementation.getAll());
     }
+
+    @GetMapping("/accounts/{userId}")
+    public ResponseEntity<List<AccountDTO>> getAccountByUser(@PathVariable long userId){
+
+        List<AccountDTO> listAccount = userServiceImplementation.listarCuentasPorUsuario(userId);
+
+        return ResponseEntity.ok(listAccount);
+    }
+
 }
