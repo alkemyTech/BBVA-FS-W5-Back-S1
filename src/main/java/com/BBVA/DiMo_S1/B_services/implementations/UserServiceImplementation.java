@@ -1,12 +1,15 @@
 package com.BBVA.DiMo_S1.B_services.implementations;
 
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
+import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
+import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
@@ -23,6 +26,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements UserService {
+
+    @Autowired
+    AccountRepository accountRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -102,5 +108,20 @@ public class UserServiceImplementation implements UserService {
     public List<FullUserDto> getAll(){
         List<User> listUser = userRepository.findAll();
         return listUser.stream().map(FullUserDto::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AccountDTO> listarCuentasPorUsuario(long userId) throws CustomException{
+
+
+        List<Account> listaCuentas = accountRepository.getByIdUser(userId);
+
+        if (listaCuentas.isEmpty()){
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO);
+        }else {
+            return listaCuentas.stream().map(
+                    AccountDTO::new
+            ).collect(Collectors.toList());
+        }
     }
 }
