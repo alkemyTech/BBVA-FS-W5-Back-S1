@@ -27,4 +27,6 @@ public class ErrorConstants {
     public static final String ERROR_CUENTA_PROPIA = "ERROR! No podes realizar una transferencia a tu propia cuenta.";
 
     public static final String ERROR_ID_USUARIO_NO_ENCONTRADO = "ERROR! No existe un usuario con ese ID.";
+
+    public static final String ERROR_BALANCE = "ERROR! No se puede obtener el balance porque no tenes ninguna cuenta";
 }

@@ -2,16 +2,29 @@ package com.BBVA.DiMo_S1.B_services.implementations;
 
 import com.BBVA.DiMo_S1.B_services.interfaces.AccountService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
+import com.BBVA.DiMo_S1.C_repositories.FixedTermDepositRepository;
+import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
+import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
+import com.BBVA.DiMo_S1.D_models.FixedTermDeposit;
+import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.D_models.User;
+import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.time.LocalDateTime;
@@ -25,6 +38,15 @@ public class AccountServiceImplementation implements AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private FixedTermDepositRepository fixedTermDepositRepository;
 
     //1- softDelete de un User de la BD.
     @Override
@@ -93,6 +115,44 @@ public class AccountServiceImplementation implements AccountService {
         return accountRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
     }
+    @Override
+    public BalanceDto obtainBalance(HttpServletRequest request){
+        BalanceDto balanceDto = BalanceDto.builder().build();
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        List <Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
+        List <Transaction> transactionList = new ArrayList<>();
+        List<FixedTermDeposit> fixedTermDeposits = new ArrayList<>();
+
+        if(listAccounts.isEmpty()){
+            throw new CustomException(HttpStatus.NOT_FOUND,ErrorConstants.ERROR_BALANCE);
+        }else {
+            for (Account account : listAccounts) {
+                if (account.getCurrency().equals(CurrencyType.ARS)) {
+                    balanceDto.setBalanceArs(account.getBalance());
+                } else {
+                    balanceDto.setBalanceUsd(account.getBalance());
+                }
+            }
+            transactionList = transactionRepository.getTransactionsByIdUser(userSecurityDTO.getId());
+            fixedTermDeposits = fixedTermDepositRepository.getFixedTermDepositByIdUser(userSecurityDTO.getId());
+
+            List<TransactionDTO> transactionDTOList = transactionList.stream()
+                    .map(TransactionDTO::new)
+                    .collect(Collectors.toList());
+
+            List<FixedTermDepositDTO> fixedTermDepositDTOList = fixedTermDeposits.stream()
+                    .map(FixedTermDepositDTO::new)
+                    .collect(Collectors.toList());
+
+            balanceDto.setTransactionDTOList(transactionDTOList);
+            balanceDto.setFixedTermDepositDTOList(fixedTermDepositDTOList);
+
+        }
+
+        return balanceDto;
+
+
+    }
 
     private String generateCBU() {
         Random rand = new Random();
@@ -108,5 +168,7 @@ public class AccountServiceImplementation implements AccountService {
         // Retornar el CBU completo (22 dígitos)
         return cbuBase;
     }
+
+
 
 }
