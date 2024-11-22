@@ -19,4 +19,10 @@ public class ErrorConstants {
     public static final String OPERACION_NO_VALIDA = "ERROR! No se puede crear una cuenta nueva actualmente.";
 
     public static final String OPERACION_SOLO_ADMIN = "ERROR! No tenes permiso para dar de baja a un User distinto al tuyo.";
+
+    public static final String ERROR_EN_TRANSACCION = "ERROR! No estas en condiciones de poder realizar la transacción deseada.";
+
+    public static final String ACCOUNT_NO_VALIDA = "ERROR! La cuenta a la cual le deseas enviar dinero no es de USD.";
+
+    public static final String ERROR_CUENTA_PROPIA = "ERROR! No podes realizar una transferencia a tu propia cuenta.";
 }
