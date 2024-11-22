@@ -16,7 +16,7 @@ public class TransactionDTO {
 
     private Long id;
 
-    private String amount;
+    private Double amount;
 
     private TransactionType type;
 

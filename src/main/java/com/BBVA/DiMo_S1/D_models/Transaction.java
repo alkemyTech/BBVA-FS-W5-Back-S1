@@ -25,7 +25,7 @@ public class Transaction {
 
     @Column(name = "amount")
     @NotNull(message = "el monto no puede ser nulo")
-    private String amount;
+    private Double amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
