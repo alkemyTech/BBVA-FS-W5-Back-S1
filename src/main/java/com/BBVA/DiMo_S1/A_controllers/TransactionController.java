@@ -18,20 +18,14 @@ public class TransactionController {
     private TransactionServiceImplementation transactionServiceImplementation;
 
     @PostMapping("/sendArs")
-    public ResponseEntity<?> sendMoney(@RequestBody TransactionDTO transactionDTO, @RequestHeader("Authorization") String token) {
-        try {
-            transactionServiceImplementation.sendArs(transactionDTO, token);
-            return ResponseEntity.ok("Transferencia realizada con éxito.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error interno del servidor.");
-        }
+    public ResponseEntity<TransactionDTO> sendArs(@RequestBody SimpleTransactionDTO simpleTransactionDTO, HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.sendMoney(request, simpleTransactionDTO));
     }
 
     @PostMapping("/sendUsd")
     public ResponseEntity<TransactionDTO> sendUsd(@RequestBody SimpleTransactionDTO simpleTransactionDTO, HttpServletRequest request) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.sendUsd(request, simpleTransactionDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.sendMoney(request, simpleTransactionDTO));
     }
 }

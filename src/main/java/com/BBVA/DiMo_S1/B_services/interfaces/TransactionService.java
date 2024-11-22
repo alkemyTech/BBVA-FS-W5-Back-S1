@@ -7,7 +7,5 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface TransactionService {
 
-    void sendArs(TransactionDTO transactionDTO, String token);
-
-    TransactionDTO sendUsd (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO);
+    TransactionDTO sendMoney (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO);
 }
