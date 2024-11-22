@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_dtos.TransactionDTO;
 
-import com.BBVA.DiMo_S1.D_models.Enums.TransactionType;
+import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

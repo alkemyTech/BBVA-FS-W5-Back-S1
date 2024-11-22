@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -101,5 +102,12 @@ public class JwtService {
         Claims claims = extractAllClaims(token);
         UserSecurityDTO security = new UserSecurityDTO(claims);
         return security;
+    }
+
+    public String extraerToken (HttpServletRequest request) {
+
+        String token = request.getHeader("Authorization");
+
+        return token.substring(7);
     }
 }

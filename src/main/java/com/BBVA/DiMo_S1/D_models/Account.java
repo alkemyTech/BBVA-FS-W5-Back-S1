@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_models;
 
-import com.BBVA.DiMo_S1.E_constants.Enums.enumCurrency;
+import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,11 +27,11 @@ public class Account {
 
     @Column(name ="CBU", unique = true)
     @NotNull
-    private Long cbu;
+    private String cbu;
 
     @Column(name = "currency")
     @NotNull(message = "La divisa no debe ser nula.")
-    private enumCurrency currency;
+    private CurrencyType currency;
 
     @Column(name = "transaction_limit")
     @NotNull(message = "El limite de transaccion no debe ser nulo.")
@@ -53,6 +53,6 @@ public class Account {
     private LocalDateTime softDelete;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_Id", nullable = false)
+    @JoinColumn(name = "user_ID", nullable = false)
     private User user;
 }

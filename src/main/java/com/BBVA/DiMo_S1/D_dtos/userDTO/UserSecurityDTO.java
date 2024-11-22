@@ -25,7 +25,7 @@ public class UserSecurityDTO {
     private LocalDateTime expirationDate;
 
     public UserSecurityDTO (Claims claims) {
-        this.id = Long.getLong(claims.getId());
+        this.id = Long.valueOf(claims.getId());
         this.email = claims.getSubject();
         this.role = claims.get("role", String.class);
         this.createdAt = Instant.ofEpochMilli(claims.getIssuedAt().getTime())
