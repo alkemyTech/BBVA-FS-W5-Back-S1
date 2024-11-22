@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -31,12 +32,11 @@ public class Transaction {
     @Column(name = "type")
     private TransactionType type;
 
-
     @Column(name = "description")
     private String description;
 
     @Column(name = "transaction_Date",updatable = false, nullable = false)
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
+    @CreationTimestamp
     private LocalDateTime transactionDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
