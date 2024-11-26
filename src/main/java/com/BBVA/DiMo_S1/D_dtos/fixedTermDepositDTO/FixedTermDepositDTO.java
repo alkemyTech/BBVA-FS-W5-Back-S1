@@ -12,16 +12,19 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+
 public class FixedTermDepositDTO {
     private double amount;
     private double interest;
     private LocalDateTime creationDate;
     private LocalDateTime closingDate;
+    private boolean settled;
 
     public FixedTermDepositDTO(FixedTermDeposit fixedTermDeposit){
         this.amount=fixedTermDeposit.getAmount();
         this.interest=fixedTermDeposit.getInterest();
         this.creationDate=fixedTermDeposit.getCreationDate();
         this.closingDate=fixedTermDeposit.getClosingDate();
+        this.settled=fixedTermDeposit.isSettled();
     }
 }
