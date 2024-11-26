@@ -29,11 +29,13 @@ public class FixedTermDeposit {
     private double interest;
 
     @Column(name = "creation_date", updatable = false, nullable = false)
-    @CreationTimestamp
     private LocalDateTime creationDate;
 
     @Column(name = "closing_date", nullable = false)
     private LocalDateTime closingDate;
+
+    @Column(name = "settled", nullable = false)
+    private boolean settled;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
