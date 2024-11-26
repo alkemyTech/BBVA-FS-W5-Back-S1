@@ -52,14 +52,18 @@ public class TransactionController {
     @GetMapping("/transactions/{idUser}")
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
-        if (userSecurityDTO.getRole().equals("Admin")) {
+        String toUpperCaseRole = userSecurityDTO.getRole();
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
             List<TransactionDTO> transactionDTOList = transactionServiceImplementation.getAllTransactionsFromUser(idUser);
             return ResponseEntity.ok(transactionDTOList);
 
         } else {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
         }
-
-
+    }
+    @GetMapping("/{idTransaction}")
+    public ResponseEntity<TransactionCompletaDTO> obtainTransactionDetail(HttpServletRequest request, @PathVariable Long idTransaction){
+        TransactionCompletaDTO transactionDetalle = transactionServiceImplementation.transactionDetail(request,idTransaction);
+        return ResponseEntity.ok(transactionDetalle);
     }
 }
