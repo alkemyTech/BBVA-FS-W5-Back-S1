@@ -15,6 +15,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -62,12 +65,12 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<FullUserDto>>getAll(HttpServletRequest request) throws CustomException{
+    public ResponseEntity<Page<FullUserDto>>getAll(@PageableDefault(page = 0, size = 10) Pageable pageable, HttpServletRequest request) throws CustomException{
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         String toUpperCaseRole = userSecurityDTO.getRole();
 
         if (toUpperCaseRole.toUpperCase().equals("ADMIN")){
-            return ResponseEntity.ok(userServiceImplementation.getAll());
+            return ResponseEntity.ok(userServiceImplementation.getAll(pageable));
         }else{
             throw new CustomException(HttpStatus.CONFLICT,"Acceso denegado no es usuario administrador");
         }
