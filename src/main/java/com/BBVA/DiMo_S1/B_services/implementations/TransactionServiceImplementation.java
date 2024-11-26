@@ -8,6 +8,7 @@ import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_config.JwtService;
@@ -19,6 +20,7 @@ import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ public class TransactionServiceImplementation implements TransactionService {
     @Autowired
     private JwtService jwtService;
 
+    @Override
     public TransactionDTO sendMoney (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
 
         //Inicializamos la transaccion vacia.
@@ -174,7 +177,7 @@ public class TransactionServiceImplementation implements TransactionService {
 
 
 
-
+    @Override
     public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO){
 
         //Constructior del deposito
@@ -230,7 +233,6 @@ public class TransactionServiceImplementation implements TransactionService {
 
     }
 
-
     public List<TransactionDTO> getAllTransactionsFromUser(Long id){
 
         List<Transaction> transactionList = transactionRepository.getTransactionsByIdUser(id);
@@ -244,4 +246,25 @@ public class TransactionServiceImplementation implements TransactionService {
 
     }
 
+
+    @Override
+    public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction ){
+        //Autenticamos el usuario
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+
+        //Buscamos una nueva transaction
+        Optional<Transaction> transaction = transactionRepository.findById(idTransaction);
+
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")){
+            if(transaction.isEmpty()){
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NO_SE_ENCONTRO_ID_TRANSACTION);
+            }
+            TransactionCompletaDTO transactionMostrar = new TransactionCompletaDTO(transaction.get());
+            return transactionMostrar;
+        }else{
+            throw new CustomException(HttpStatus.CONFLICT,"Acceso denegado no es usuario administrador");
+        }
+    }
 }

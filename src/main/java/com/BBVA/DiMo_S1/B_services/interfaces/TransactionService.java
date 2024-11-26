@@ -21,4 +21,7 @@ public interface TransactionService {
 
     List<TransactionDTO> getAllTransactionsFromUser(Long id);
 
+    //Obtener detalle de una transaction
+
+    TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction);
 }
