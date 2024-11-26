@@ -22,11 +22,17 @@ public class ErrorConstants {
 
     public static final String ERROR_EN_TRANSACCION = "ERROR! No estas en condiciones de poder realizar la transacción deseada.";
 
+    public static final String ERROR_CUENTA_PESOS = "ERROR! Para poder crear un Plazo Fijo necesitas tener una cuenta en pesos disponoble.";
+
+    public static final String SALDO_NO_DISPONIBLE = "ERROR! No tenes el dinero suficiente para poder realizar la operación que deseas.";
+
     public static final String ACCOUNT_NO_VALIDA = "ERROR! La cuenta a la cual le deseas enviar dinero no es del mismo tipo que la tuya.";
 
     public static final String ERROR_CUENTA_PROPIA = "ERROR! No podes realizar una transferencia a tu propia cuenta.";
 
     public static final String ERROR_ID_USUARIO_NO_ENCONTRADO = "ERROR! No existe un usuario con ese ID.";
+
+    public static final String ERROR_CREACION_PLAZO_FIJO = "ERROR! El monto minimo a invertir en el Plazo Fijo es de 1000 y los dias deben ser 30/60/90.";
 
     public static final String ERROR_BALANCE = "ERROR! No se puede obtener el balance porque no tenes ninguna cuenta";
 }
