@@ -19,7 +19,6 @@ public interface TransactionService {
     TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO);
 
 
-
     List<TransactionDTO> getAllTransactionsFromUser(Long id);
 
 }
