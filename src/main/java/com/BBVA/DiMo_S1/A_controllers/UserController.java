@@ -1,7 +1,9 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
+import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
@@ -32,6 +34,9 @@ public class UserController {
     AccountServiceImplementation accountServiceImplementation;
 
     @Autowired
+    AuthServiceImplementation authServiceImplementation;
+
+    @Autowired
     JwtService jwtService;
 
     //1- softDelete de un User de la BD.
@@ -47,17 +52,38 @@ public class UserController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody CreateUserDTO createUserDTO){
+    public ResponseEntity<?> registerUser(@RequestBody CreateUserDTO createUserDTO){
 
-        UserDTO userDTO = new UserDTO();
-        userDTO = userServiceImplementation.create(createUserDTO);
+        UserDTO userDTO = userServiceImplementation.create(createUserDTO);
         accountServiceImplementation.createAccount(userDTO.getId(), CurrencyType.ARS);
+        authServiceImplementation.login(userDTO.getEmail(), createUserDTO.getPassword());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
+        return ResponseEntity.ok(authServiceImplementation.login(userDTO.getEmail(), createUserDTO.getPassword()));
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<FullUserDto>>getAll(){
-        return ResponseEntity.ok(userServiceImplementation.getAll());
+    public ResponseEntity<List<FullUserDto>>getAll(HttpServletRequest request) throws CustomException{
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")){
+            return ResponseEntity.ok(userServiceImplementation.getAll());
+        }else{
+            throw new CustomException(HttpStatus.CONFLICT,"Acceso denegado no es usuario administrador");
+        }
     }
+
+    @GetMapping("/accounts/{userId}")
+    public ResponseEntity<List<AccountDTO>> getAccountByUser(@PathVariable long userId){
+
+        List<AccountDTO> listAccount = userServiceImplementation.listarCuentasPorUsuario(userId);
+
+        return ResponseEntity.ok(listAccount);
+    }
+
+    @GetMapping("/usersProfile")
+    public ResponseEntity<UserDTO> userDetail(HttpServletRequest request){
+        return ResponseEntity.ok(userServiceImplementation.userDetail(request));
+    }
+
 }
