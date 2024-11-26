@@ -5,7 +5,9 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_config.JwtService;
@@ -165,5 +167,61 @@ public class TransactionServiceImplementation implements TransactionService {
         TransactionDTO transactionDTO = new TransactionDTO(transactionGuardada);
 
         return transactionDTO;
+    }
+
+
+    public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO){
+
+        //Constructior del deposito
+        Transaction deposito = Transaction.builder().build();
+
+        //Extraemos el User autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+
+        Optional<Account> cuenta = null;
+
+        List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
+
+
+        if(transactionDepositDTO.getCurrencyType().equals(CurrencyType.USD)){
+            cuenta = listAccounts.stream()
+                    .filter(account -> account.getCurrency() == CurrencyType.USD)
+                    .findFirst();
+            if(cuenta.isEmpty()){
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ACCOUNT_NO_ENCONTRADA);
+            }
+        }else {
+            cuenta = listAccounts.stream()
+                    .filter(account -> account.getCurrency() == CurrencyType.ARS)
+                    .findFirst();
+        }
+
+
+            if (transactionDepositDTO.getAmount() <= 0 ) {
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_NEGATIVO);
+            } else {
+
+                double nuevoBalance = cuenta.get().getBalance() + transactionDepositDTO.getAmount();
+                if (nuevoBalance > cuenta.get().getTransactionLimit()){
+                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_MAYOR_A_DEPOSITO);
+                }
+                cuenta.get().setBalance(nuevoBalance);
+                accountRepository.save(cuenta.get());
+
+                deposito.setAmount(transactionDepositDTO.getAmount());
+                deposito.setType(TransactionType.deposit);
+                deposito.setDescription(transactionDepositDTO.getDescription());
+                deposito.setAccount(cuenta.get());
+
+            }
+
+
+        Transaction transactionGuardada = transactionRepository.save(deposito);
+
+
+        TransactionCompletaDTO transactionCompletaDTO = new TransactionCompletaDTO(transactionGuardada);
+
+        return transactionCompletaDTO;
+
     }
 }
