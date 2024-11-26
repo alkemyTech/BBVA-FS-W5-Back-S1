@@ -38,4 +38,6 @@ public class ErrorConstants {
 
     public static final String ERROR_TRANSACTION_NOT_EXIST = "ERROR! Este usuario no tiene transacciones";
 
+    public static final String ERROR_NO_SE_ENCONTRO_ID_TRANSACTION = "ERROR! No existe una transaction con ese ID";
+
 }
