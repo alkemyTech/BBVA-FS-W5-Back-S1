@@ -19,5 +19,6 @@ public interface UserService {
     User findById(Long id);
     List<FullUserDto>getAll();
     List<AccountDTO> listarCuentasPorUsuario(long userId)throws CustomException;
+    UserDTO userDetail(HttpServletRequest request);
 
 }

@@ -35,4 +35,13 @@ public class ErrorConstants {
     public static final String ERROR_CREACION_PLAZO_FIJO = "ERROR! El monto minimo a invertir en el Plazo Fijo es de 1000 y los dias deben ser 30/60/90.";
 
     public static final String ERROR_BALANCE = "ERROR! No se puede obtener el balance porque no tenes ninguna cuenta";
+
+    public static final String ERROR_BALANCE_NEGATIVO = "ERROR! El deposito debe ser mayor a 0";
+
+    public static final String ERROR_BALANCE_MAYOR_A_DEPOSITO = "ERROR! El deposito no puede ser mayor al limite de transaccion";
+
+    public static final String ERROR_NOT_ADMIN = "ERROR! No tiene el rol administrador!";
+
+    public static final String ERROR_TRANSACTION_NOT_EXIST = "ERROR! Este usuario no tiene transacciones";
+
 }

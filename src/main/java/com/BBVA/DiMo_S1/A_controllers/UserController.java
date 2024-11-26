@@ -79,4 +79,9 @@ public class UserController {
         return ResponseEntity.ok(listAccount);
     }
 
+    @GetMapping("/usersProfile")
+    public ResponseEntity<UserDTO> userDetail(HttpServletRequest request){
+        return ResponseEntity.ok(userServiceImplementation.userDetail(request));
+    }
+
 }
