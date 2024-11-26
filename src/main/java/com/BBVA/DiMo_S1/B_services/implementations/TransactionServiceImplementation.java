@@ -20,8 +20,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionServiceImplementation implements TransactionService {
@@ -170,6 +173,7 @@ public class TransactionServiceImplementation implements TransactionService {
     }
 
 
+
     public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO){
 
         //Constructior del deposito
@@ -224,4 +228,19 @@ public class TransactionServiceImplementation implements TransactionService {
         return transactionCompletaDTO;
 
     }
+
+    public List<TransactionDTO> getAllTransactionsFromUser(Long id){
+
+        List<Transaction> transactionList = transactionRepository.getTransactionsByIdUser(id);
+        if (!transactionList.isEmpty()){
+            return transactionList.stream()
+                    .map(TransactionDTO::new)
+                    .collect(Collectors.toList());
+        }else{
+            throw new CustomException(HttpStatus.CONFLICT,ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+    }
+
+
 }
