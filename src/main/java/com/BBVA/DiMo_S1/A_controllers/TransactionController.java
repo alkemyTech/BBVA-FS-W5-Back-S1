@@ -1,7 +1,6 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.TransactionServiceImplementation;
-import com.BBVA.DiMo_S1.B_services.interfaces.TransactionService;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,5 +32,21 @@ public class TransactionController {
     public ResponseEntity<TransactionDTO> sendUsd(@RequestBody SimpleTransactionDTO simpleTransactionDTO, HttpServletRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.sendUsd(request, simpleTransactionDTO));
+    }
+
+    //Endpoint para pagos
+    @PostMapping("/payment")
+    public ResponseEntity<?> makePayment(@RequestBody TransactionDTO transactionDTO, @RequestHeader("Authorization") String token) {
+        try {
+            // Llamar al servicio para procesar el pago
+            var response = transactionServiceImplementation.makePayment(transactionDTO, token);
+
+            // Devolver respuesta exitosa
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error interno del servidor.");
+        }
     }
 }

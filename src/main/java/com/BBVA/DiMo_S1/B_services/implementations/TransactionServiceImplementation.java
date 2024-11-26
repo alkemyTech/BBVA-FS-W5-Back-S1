@@ -8,6 +8,7 @@ import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
+import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
@@ -20,6 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -159,5 +163,50 @@ public class TransactionServiceImplementation implements TransactionService {
         TransactionDTO transactionDTO = new TransactionDTO(transactionGuardada);
 
         return transactionDTO;
+    }
+
+    //
+    @Override
+    public Map<String, Object> makePayment(TransactionDTO transactionDTO, String token) {
+        // Validar que el monto sea positivo
+        if (transactionDTO.getAmount() <= 0) {
+            throw new IllegalArgumentException("El monto debe ser mayor a cero.");
+        }
+
+        // Extraer el usuario autenticado a partir del token
+        String email = jwtService.extractUsername(token);
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new IllegalArgumentException("Usuario no encontrado."));
+
+        // Buscar la cuenta del usuario (considerando tipo de cuenta del DTO)
+        Account account = accountRepository.findByUserIdAndCurrency(user.getId(), transactionDTO.getType().ordinal())
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró una cuenta del tipo indicado para este usuario."));
+
+        // Verificar que haya suficiente saldo
+        if (account.getBalance() < transactionDTO.getAmount()) {
+            throw new IllegalArgumentException("Saldo insuficiente para realizar el pago.");
+        }
+
+        // Registrar la transacción como payment
+        Transaction payment = Transaction.builder()
+                .amount(transactionDTO.getAmount())
+                .type(TransactionType.payment)
+                .description(transactionDTO.getDescription())
+                .transactionDate(LocalDateTime.now())
+                .account(account)
+                .build();
+
+        transactionRepository.save(payment);
+
+        // Actualizar el balance de la cuenta
+        account.setBalance(account.getBalance() - transactionDTO.getAmount());
+        accountRepository.save(account);
+
+        // Preparar la respuesta
+        Map<String, Object> response = new HashMap<>();
+        response.put("transaction", new TransactionDTO(payment));
+        response.put("updatedAccount", account);
+
+        return response;
     }
 }
