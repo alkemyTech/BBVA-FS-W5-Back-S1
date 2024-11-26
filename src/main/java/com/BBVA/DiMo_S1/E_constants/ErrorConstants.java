@@ -30,7 +30,16 @@ public class ErrorConstants {
 
     public static final String ERROR_BALANCE = "ERROR! No se puede obtener el balance porque no tenes ninguna cuenta";
 
+<<<<<<< HEAD
+    public static final String ERROR_BALANCE_NEGATIVO = "ERROR! El deposito debe ser mayor a 0";
+
+    public static final String ERROR_BALANCE_MAYOR_A_DEPOSITO = "ERROR! El deposito no puede ser mayor al limite de transaccion";
+
+
+
+=======
     public static final String ERROR_NOT_ADMIN = "ERROR! No tiene el rol administrador!";
 
     public static final String ERROR_TRANSACTION_NOT_EXIST = "ERROR! Este usuario no tiene transacciones";
+>>>>>>> 0e66e82a6ffa19b45e11a1b841bdcc656e72b020
 }
