@@ -64,7 +64,9 @@ public class UserController {
     @GetMapping("/users")
     public ResponseEntity<List<FullUserDto>>getAll(HttpServletRequest request) throws CustomException{
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
-        if (userSecurityDTO.getRole().equals("Admin")) {
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")){
             return ResponseEntity.ok(userServiceImplementation.getAll());
         }else{
             throw new CustomException(HttpStatus.CONFLICT,"Acceso denegado no es usuario administrador");
