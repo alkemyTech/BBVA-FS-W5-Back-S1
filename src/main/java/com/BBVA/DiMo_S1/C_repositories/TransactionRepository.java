@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
     @Query("SELECT tr FROM Transaction tr JOIN FETCH tr.account ac JOIN FETCH ac.user u WHERE u.id = :idUser")
     List<Transaction> getTransactionsByIdUser(@Param("idUser") long idUser);
 }

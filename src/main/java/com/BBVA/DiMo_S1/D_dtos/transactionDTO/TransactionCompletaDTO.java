@@ -19,10 +19,8 @@ public class TransactionCompletaDTO {
     private TransactionType type;
     private String description;
     private LocalDateTime transactionDate;
-    private Double balance;
-    private String cbu;
-    private Double transactionLimit;
-
+    private String cbuCuenta;
+    private String titular;
 
 
     public TransactionCompletaDTO(Transaction transaction){
@@ -30,9 +28,8 @@ public class TransactionCompletaDTO {
         this.type = transaction.getType();
         this.description = transaction.getDescription();
         this.transactionDate = transaction.getTransactionDate();
-        this.balance = transaction.getAccount().getBalance();
-        this.cbu = transaction.getAccount().getCbu();
-        this.transactionLimit = transaction.getAccount().getTransactionLimit();
-
+        this.cbuCuenta = transaction.getAccount().getCbu();
+        this.titular = (transaction.getAccount().getUser().getFirstName() + " "
+                + transaction.getAccount().getUser().getLastName());
     }
 }
