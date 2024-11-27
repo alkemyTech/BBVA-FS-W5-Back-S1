@@ -1,6 +1,9 @@
 package com.BBVA.DiMo_S1.C_repositories;
 
 import com.BBVA.DiMo_S1.D_models.Account;
+import com.BBVA.DiMo_S1.D_models.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +31,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional <Account> getArsAccountByIdUser(@Param("idUser") long idUser);
 
     Optional<Account> findByCbu (String cbu);
+
+    Page<Account> findAll(Pageable pageable);
+
+
 }
 
