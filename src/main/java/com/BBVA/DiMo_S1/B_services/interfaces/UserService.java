@@ -21,6 +21,6 @@ public interface UserService {
     List<FullUserDto>getAll();
     List<AccountDTO> listarCuentasPorUsuario(long userId)throws CustomException;
     UserDTO userDetail(HttpServletRequest request);
-    UpdateUserDTO updateUser(Long idUser, UpdateUserDTO updateUserDTO);
+    UpdateUserDTO updateUser(HttpServletRequest request,Long idUser, UpdateUserDTO updateUserDTO);
 
 }
