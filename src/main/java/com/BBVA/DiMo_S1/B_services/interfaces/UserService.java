@@ -3,6 +3,7 @@ package com.BBVA.DiMo_S1.B_services.interfaces;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
@@ -22,5 +23,6 @@ public interface UserService {
     Page<FullUserDto> getAll(Pageable pageable);
     List<AccountDTO> listarCuentasPorUsuario(long userId)throws CustomException;
     UserDTO userDetail(HttpServletRequest request);
+    UpdateUserDTO updateUser(Long idUser, UpdateUserDTO updateUserDTO);
 
 }

@@ -1,8 +1,9 @@
 package com.BBVA.DiMo_S1.D_dtos.userDTO;
 
 import com.BBVA.DiMo_S1.D_models.User;
+import lombok.Builder;
 import lombok.Data;
-
+@Builder
 @Data
 public class CreateUserDTO {
     private String firstName;

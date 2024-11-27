@@ -4,6 +4,8 @@ package com.BBVA.DiMo_S1.A_controllers;
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowUpdateAccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.UpdateAccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
@@ -50,9 +52,17 @@ public class AccountController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(accountCreada);
     }
+
     @GetMapping("/balance")
     public ResponseEntity<BalanceDto> obtainBalance(HttpServletRequest request){
         
         return ResponseEntity.ok().body(accountServiceImplementation.obtainBalance(request));
+    }
+
+    @PatchMapping ("/{cbu}")
+    public ResponseEntity<ShowUpdateAccountDTO> updateAccount (HttpServletRequest request, @RequestBody
+    UpdateAccountDTO updateAccountDTO, @PathVariable String cbu) {
+
+        return ResponseEntity.ok().body(accountServiceImplementation.updateAccount(request, updateAccountDTO, cbu));
     }
 }
