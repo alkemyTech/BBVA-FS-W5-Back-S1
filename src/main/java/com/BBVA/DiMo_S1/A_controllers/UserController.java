@@ -61,7 +61,7 @@ public class UserController {
         return ResponseEntity.ok(authServiceImplementation.login(userDTO.getEmail(), createUserDTO.getPassword()));
     }
 
-    @GetMapping("/users")
+    @GetMapping()
     public ResponseEntity<Page<FullUserDto>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
