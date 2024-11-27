@@ -5,13 +5,12 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.FixedTermDepositRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowUpdateAccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.UpdateAccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.FixedTermDeposit;
@@ -23,6 +22,8 @@ import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -250,5 +251,11 @@ public class AccountServiceImplementation implements AccountService {
 
         // Retornar el CBU completo (22 dígitos)
         return cbuBase;
+    }
+
+    @Override
+    public Page<AccountPageDTO> getAll(Pageable pageable){
+        return accountRepository.findAll(pageable)
+                .map(AccountPageDTO::new);
     }
 }

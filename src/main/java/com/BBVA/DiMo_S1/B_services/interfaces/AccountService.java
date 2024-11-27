@@ -1,12 +1,13 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowUpdateAccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.UpdateAccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
+
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AccountService {
     //1- softDelete de una Account de la BD.
@@ -21,4 +22,9 @@ public interface AccountService {
 
     //3- Actualizar Account del User
     ShowUpdateAccountDTO updateAccount (HttpServletRequest request, UpdateAccountDTO updateAccountDTO, String cbu);
+
+    //4- Paginado de Cuentas
+    Page<AccountPageDTO> getAll(Pageable pageable);
+
+
 }
