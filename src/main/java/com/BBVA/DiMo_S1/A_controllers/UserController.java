@@ -92,13 +92,21 @@ public class UserController {
 
 
     @PatchMapping("/update/{idUser}")
-    public ResponseEntity<UpdateUserDTO> userUpdate(HttpServletRequest request, @RequestBody UpdateUserDTO createUserDTO, @PathVariable Long idUser){
+    public ResponseEntity<UpdateUserDTO> userUpdateAdmin(HttpServletRequest request, @RequestBody UpdateUserDTO createUserDTO, @PathVariable Long idUser){
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         if(userSecurityDTO.getRole().toUpperCase().equals("ADMIN")){
-            createUserDTO = userServiceImplementation.updateUser(idUser, createUserDTO);
+            createUserDTO = userServiceImplementation.updateUser(request,idUser, createUserDTO);
             return ResponseEntity.ok(createUserDTO);
         } else {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.CREDENCIALES_INVALIDAS);
         }
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<UpdateUserDTO> userUpdate(HttpServletRequest request, @RequestBody UpdateUserDTO createUserDTO) {
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        Long idUser = userSecurityDTO.getId();
+        createUserDTO = userServiceImplementation.updateUser(request, idUser, createUserDTO);
+        return ResponseEntity.ok(createUserDTO);
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -136,7 +137,8 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UpdateUserDTO updateUser(Long idUser, UpdateUserDTO updateUserDTO){
+    public UpdateUserDTO updateUser(HttpServletRequest request,Long idUser, UpdateUserDTO updateUserDTO){
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         Optional<User> user = userRepository.findById(idUser);
 
         if(user.isEmpty()){
@@ -146,10 +148,7 @@ public class UserServiceImplementation implements UserService {
         user.get().setLastName(updateUserDTO.getLastName());
         String passHash = BCrypt.hashpw(updateUserDTO.getPassword(),BCrypt.gensalt());
         user.get().setPassword(passHash);
-
-
         User user1 = userRepository.save(user.get());
-        System.out.println(user1.toString());
         return updateUserDTO;
     }
 }

@@ -23,6 +23,6 @@ public interface UserService {
     Page<FullUserDto> getAll(Pageable pageable);
     List<AccountDTO> listarCuentasPorUsuario(long userId)throws CustomException;
     UserDTO userDetail(HttpServletRequest request);
-    UpdateUserDTO updateUser(Long idUser, UpdateUserDTO updateUserDTO);
+    UpdateUserDTO updateUser(HttpServletRequest request,Long idUser, UpdateUserDTO updateUserDTO);
 
 }
