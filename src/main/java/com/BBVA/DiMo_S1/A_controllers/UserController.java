@@ -4,12 +4,10 @@ import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.*;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
+import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -86,4 +84,15 @@ public class UserController {
         return ResponseEntity.ok(userServiceImplementation.userDetail(request));
     }
 
+
+    @PatchMapping("/update/{idUser}")
+    public ResponseEntity<UpdateUserDTO> userUpdate(HttpServletRequest request, @RequestBody UpdateUserDTO createUserDTO, @PathVariable Long idUser){
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        if(userSecurityDTO.getRole().toUpperCase().equals("ADMIN")){
+            createUserDTO = userServiceImplementation.updateUser(idUser, createUserDTO);
+            return ResponseEntity.ok(createUserDTO);
+        } else {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.CREDENCIALES_INVALIDAS);
+        }
+    }
 }
