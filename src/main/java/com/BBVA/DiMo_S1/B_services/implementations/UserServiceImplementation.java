@@ -14,13 +14,17 @@ import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -103,9 +107,9 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<FullUserDto> getAll(){
-        List<User> listUser = userRepository.findAll();
-        return listUser.stream().map(FullUserDto::new).collect(Collectors.toList());
+    public Page<FullUserDto> getAll(Pageable pageable){
+        return userRepository.findAll(pageable)
+                .map(FullUserDto::new);
     }
 
     @Override
