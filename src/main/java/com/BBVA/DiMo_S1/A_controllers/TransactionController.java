@@ -5,12 +5,12 @@ import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
@@ -43,13 +43,14 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.deposit(request, transactionDepositDTO));
     }
 
-    @GetMapping("/transactions")
+    @GetMapping()
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsUser(HttpServletRequest request) {
+
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         return ResponseEntity.ok(transactionServiceImplementation.getAllTransactionsFromUser(userSecurityDTO.getId()));
     }
 
-    @GetMapping("/transactions/{idUser}")
+    @GetMapping("/{idUser}")
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         String toUpperCaseRole = userSecurityDTO.getRole();
