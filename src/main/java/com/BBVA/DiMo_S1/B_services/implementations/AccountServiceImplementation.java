@@ -5,10 +5,7 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.FixedTermDepositRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowCreatedAccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowUpdateAccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.UpdateAccountDTO;
+import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
@@ -22,6 +19,8 @@ import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -123,7 +122,7 @@ public class AccountServiceImplementation implements AccountService {
         ShowUpdateAccountDTO showUpdateAccountDTO;
 
         //Obtenemos el User autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Buscamos la Account por id.
         Optional<Account> account = accountRepository.findByCbu(cbu);
@@ -159,7 +158,7 @@ public class AccountServiceImplementation implements AccountService {
         BalanceDto balanceDto = BalanceDto.builder().build();
 
         //Obtenemos el usuario autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Obtenemos la lista de cuentas del User.
         List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
@@ -210,7 +209,7 @@ public class AccountServiceImplementation implements AccountService {
     public void softDelete(final HttpServletRequest request, final long id) throws CustomException {
 
         //Obtenemos el User autenticado
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Buscamos la Account por ID. En caso de que no exista, lanzamos excepción.
         Account account = accountRepository.findById(userSecurityDTO.getId())
@@ -270,5 +269,11 @@ public class AccountServiceImplementation implements AccountService {
 
         // Retornar el CBU completo (22 dígitos)
         return cbuBase;
+    }
+
+    @Override
+    public Page<AccountPageDTO> getAll(Pageable pageable) {
+        return accountRepository.findAll(pageable)
+                .map(AccountPageDTO::new);
     }
 }

@@ -1,12 +1,11 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.TransactionServiceImplementation;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.B_services.interfaces.TransactionService;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +24,9 @@ public class TransactionController {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @PostMapping("/sendArs")
     public ResponseEntity<TransactionDTO> sendArs(@RequestBody SimpleTransactionDTO simpleTransactionDTO, HttpServletRequest request) {
@@ -45,13 +47,13 @@ public class TransactionController {
 
     @GetMapping("/transactions")
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsUser(HttpServletRequest request) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
         return ResponseEntity.ok(transactionServiceImplementation.getAllTransactionsFromUser(userSecurityDTO.getId()));
     }
 
     @GetMapping("/transactions/{idUser}")
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
         String toUpperCaseRole = userSecurityDTO.getRole();
         if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
             List<TransactionDTO> transactionDTOList = transactionServiceImplementation.getAllTransactionsFromUser(idUser);
@@ -65,5 +67,52 @@ public class TransactionController {
     public ResponseEntity<TransactionCompletaDTO> obtainTransactionDetail(HttpServletRequest request, @PathVariable Long idTransaction){
         TransactionCompletaDTO transactionDetalle = transactionServiceImplementation.transactionDetail(request,idTransaction);
         return ResponseEntity.ok(transactionDetalle);
+    }
+
+    //Endpoint para pagos
+    @PostMapping("/payment")
+    public ResponseEntity<?> makePayment(@RequestBody TransactionDTO transactionDTO, HttpServletRequest request){
+
+        // Llamar al servicio para procesar el pago
+        var response = transactionServiceImplementation.makePayment(transactionDTO, request);
+
+        // Devolver respuesta exitosa
+        System.out.println(response);
+        return ResponseEntity.ok(response);
+
+    }
+
+    @PatchMapping("/transactions/{id}")
+    public ResponseEntity<?> updateTransactionDescription(
+            @PathVariable("id") Long transactionId,
+            @RequestBody TransactionUpdateDTO transactionUpdateDTO,
+            HttpServletRequest request) {
+
+        try {
+            // Obtén la descripción desde el DTO
+            String newDescription = transactionUpdateDTO.getDescription();
+
+            // Llama al servicio para actualizar la descripción de la transacción
+            TransactionDTO updatedTransaction = transactionService.updateTransactionDescription(transactionId, newDescription, request);
+
+            // Devuelve la transacción actualizada
+            return ResponseEntity.ok(updatedTransaction);
+        } catch (IllegalArgumentException e) {
+            // Maneja errores específicos con una respuesta adecuada
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            // Manejo genérico de errores
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocurrió un error inesperado.");
+        }
+    }
+
+    //Endpoint para pruebas de paginado
+    @GetMapping("/admin/transactions")
+    public ResponseEntity<Page<TransactionDTO>> getTransactionsByUser(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        Page<TransactionDTO> transactions = transactionService.getTransactionsByUser(userId, page);
+        return ResponseEntity.ok(transactions);
     }
 }

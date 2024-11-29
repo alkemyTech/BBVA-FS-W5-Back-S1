@@ -4,6 +4,7 @@ import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
+import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -53,8 +56,7 @@ public class AccountController {
     public ResponseEntity<ShowCreatedAccountDTO> createAccount(HttpServletRequest request, @Valid @RequestBody CreateAccountDTO
             createAccountDTO) {
 
-        //Obtenemos el usuario autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(accountServiceImplementation.
                 createAccount(userSecurityDTO.getId(), createAccountDTO.getTipoDeCuenta()));
@@ -107,4 +109,20 @@ public class AccountController {
         return ResponseEntity.ok().body("Account con ID = " + idAccount + " eliminado con éxito!");
     }
     //-----------------------------------------------------------------------------------------------------------
+
+    @GetMapping("/page")
+    public ResponseEntity<Page<AccountPageDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) throws CustomException {
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
+            return ResponseEntity.ok(accountServiceImplementation.getAll(PageRequest.of(page, size)));
+        } else {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.CREDENCIALES_INVALIDAS);
+        }
+    }
 }

@@ -64,7 +64,7 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
         }
 
         //Si las 2 primeras condiciones se cumplen, vamos a obtener el User que esta en la sesión.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Una vez que obtenemos el User, validamos que el mismo tenga una cuenta en pesos creada.
         Account account = accountRepository.getArsAccountByIdUser(userSecurityDTO.getId())
