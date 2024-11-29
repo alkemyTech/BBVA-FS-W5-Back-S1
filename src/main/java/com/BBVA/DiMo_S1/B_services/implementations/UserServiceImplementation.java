@@ -49,7 +49,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public void softDelete(HttpServletRequest request, long idUser) throws CustomException {
 
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Buscamos al User por ID. En caso de que no exista, lanzamos excepción.
         User user = userRepository.findById(idUser)
@@ -127,7 +127,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     public UserDTO userDetail(HttpServletRequest request){
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         User user = userRepository.findById(userSecurityDTO.getId()).orElseThrow(
                 ()-> new CustomException(

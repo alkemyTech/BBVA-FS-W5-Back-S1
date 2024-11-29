@@ -46,7 +46,7 @@ public class AccountController {
     @PostMapping("/")
     public ResponseEntity<AccountDTO> createAccount(HttpServletRequest request, @Valid @RequestBody String currencyType) {
 
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         AccountDTO accountCreada = accountServiceImplementation.createAccount(userSecurityDTO.getId(),
                 CurrencyType.valueOf(currencyType.replaceAll("\"", "")));

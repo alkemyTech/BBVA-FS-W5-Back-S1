@@ -1,6 +1,7 @@
 package com.BBVA.DiMo_S1.D_dtos.transactionDTO;
 
 import com.BBVA.DiMo_S1.D_models.Transaction;
+import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ public class TransactionDTO {
     private String description;
     private LocalDateTime transactionDate;
     private String cuentaDestino;
+    private CurrencyType currencyType;
 
     public TransactionDTO (Transaction transaction) {
         this.id = transaction.getId();
@@ -32,5 +34,6 @@ public class TransactionDTO {
         this.description = transaction.getDescription();
         this.transactionDate = transaction.getTransactionDate();
         this.cuentaDestino = transaction.getAccount().getCbu();
+        this.currencyType = transaction.getAccount().getCurrency();
     }
 }
