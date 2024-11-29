@@ -24,10 +24,8 @@ import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -134,7 +132,7 @@ public class AccountServiceImplementation implements AccountService {
         BalanceDto balanceDto = BalanceDto.builder().build();
 
         //Obtenemos el usuario autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Obtenemos la lista de cuentas del User.
         List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
@@ -212,7 +210,7 @@ public class AccountServiceImplementation implements AccountService {
         ShowUpdateAccountDTO showUpdateAccountDTO = ShowUpdateAccountDTO.builder().build();
 
         //Obtenemos el User autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Buscamos la Account por id.
         Optional <Account> account = accountRepository.findByCbu(cbu);

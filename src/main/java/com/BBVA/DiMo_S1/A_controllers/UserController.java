@@ -44,7 +44,7 @@ public class UserController {
     public ResponseEntity<String> softDelete (HttpServletRequest request, @Valid @PathVariable @NotNull
             (message = "El ID del User no puede ser nulo.") long idUser) throws CustomException {
 
-        jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         userServiceImplementation.softDelete(request, idUser);
 
@@ -63,7 +63,7 @@ public class UserController {
 
     @GetMapping("/users")
     public ResponseEntity<List<FullUserDto>>getAll(HttpServletRequest request) throws CustomException{
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
         String toUpperCaseRole = userSecurityDTO.getRole();
 
         if (toUpperCaseRole.toUpperCase().equals("ADMIN")){
