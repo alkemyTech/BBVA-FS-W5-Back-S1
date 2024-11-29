@@ -1,6 +1,5 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
-import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.LoginUserDTO;
@@ -28,11 +27,7 @@ public class AuthController {
 
     @Autowired
     AuthServiceImplementation authServiceImplementation;
-
-    @Autowired
-    AccountServiceImplementation accountServiceImplementation;
-
-
+    
     //1- Registro de User en el Sistema.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Registrarse en el Sistema", description = "Endpoint para darse de alta en el sistema. " +
