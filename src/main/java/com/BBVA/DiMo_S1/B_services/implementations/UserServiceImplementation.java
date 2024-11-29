@@ -81,25 +81,6 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserDTO create(final CreateUserDTO createUserDTO) throws CustomException{
-
-        User user = User.builder().build();
-
-        if (userRepository.findByEmail(createUserDTO.getEmail()).isEmpty()) {
-            createUserDTO.guardarDTO(user);
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
-        }
-        //hasheo de password
-        String passHash = BCrypt.hashpw(user.getPassword(),BCrypt.gensalt());
-        user.setPassword(passHash);
-        Role role = roleServiceImplementation.findById(2l);
-        user.setRole(role);
-        user = userRepository.save(user);
-        return new UserDTO(user);
-    }
-
-    @Override
     public User findById(Long id){
         return userRepository.findById(id).orElse(null);
     }

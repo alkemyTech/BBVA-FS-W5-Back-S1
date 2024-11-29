@@ -10,10 +10,10 @@ import lombok.Data;
 
 @Data
 public class CreateAccountDTO {
-    private CurrencyType currency;
-    private Long userId;
 
-    public void guardarDTO (final Account account) {
-        account.setCurrency(this.currency);
+    private CurrencyType tipoDeCuenta;
+
+    public void guardarDtoEnAccount (final Account account) {
+        account.setCurrency(this.tipoDeCuenta);
     }
 }

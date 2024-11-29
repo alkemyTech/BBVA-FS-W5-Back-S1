@@ -8,22 +8,19 @@ import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
+import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
-import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,7 +41,7 @@ public class TransactionServiceImplementation implements TransactionService {
     private JwtService jwtService;
 
     @Override
-    public TransactionDTO sendMoney (HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
+    public TransactionDTO sendMoney(HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
 
         //Inicializamos la transaccion vacia.
         Transaction transactionEmisor = Transaction.builder().build();
@@ -54,7 +51,7 @@ public class TransactionServiceImplementation implements TransactionService {
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         //Obtenemos la lista de cuentas del User autenticado
-        List <Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
+        List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
 
         //Validamos en primer lugar que tenga cuentas asociadas.
         if (listAccounts.isEmpty()) {
@@ -63,7 +60,7 @@ public class TransactionServiceImplementation implements TransactionService {
         }
 
         //Validamos cual es la accion que quiere realizar el User
-        Optional <Account> accountEmisora;
+        Optional<Account> accountEmisora;
 
         //Si quiere enviar dolares...
         if (request.getRequestURI().contains("transactions/sendUsd")) {
@@ -86,7 +83,7 @@ public class TransactionServiceImplementation implements TransactionService {
                     throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
                 }
             }
-        } else  {
+        } else {
 
             //Si quiere enviar pesos..
             //Buscamos en la lista la cuenta en ARS.
@@ -113,7 +110,7 @@ public class TransactionServiceImplementation implements TransactionService {
 
         //Obtenemos la cuenta destino. Verificamos 2 cosas: Que el CBU no sea el del usuario autenticado
         //y que exista.
-        Optional <Account> accountBuscada = accountRepository.findByCbu(simpleTransactionDTO.getCBU());
+        Optional<Account> accountBuscada = accountRepository.findByCbu(simpleTransactionDTO.getCBU());
 
         //Si la cuenta buscada existe...
         if (accountBuscada.isPresent()) {
@@ -157,7 +154,7 @@ public class TransactionServiceImplementation implements TransactionService {
                     throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.ACCOUNT_NO_VALIDA);
                 }
 
-            } else  {
+            } else {
 
                 throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.ERROR_CUENTA_PROPIA);
             }
@@ -175,10 +172,8 @@ public class TransactionServiceImplementation implements TransactionService {
         return transactionDTO;
     }
 
-
-
     @Override
-    public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO){
+    public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO) {
 
         //Constructior del deposito
         Transaction deposito = Transaction.builder().build();
@@ -186,42 +181,41 @@ public class TransactionServiceImplementation implements TransactionService {
         //Extraemos el User autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
-        Optional<Account> cuenta = null;
+        Optional<Account> cuenta;
 
         List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
 
-
-        if(transactionDepositDTO.getCurrencyType().equals(CurrencyType.USD)){
+        if (transactionDepositDTO.getCurrencyType().equals(CurrencyType.USD)) {
             cuenta = listAccounts.stream()
                     .filter(account -> account.getCurrency() == CurrencyType.USD)
                     .findFirst();
-            if(cuenta.isEmpty()){
+            if (cuenta.isEmpty()) {
                 throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ACCOUNT_NO_ENCONTRADA);
             }
-        }else {
+        } else {
             cuenta = listAccounts.stream()
                     .filter(account -> account.getCurrency() == CurrencyType.ARS)
                     .findFirst();
         }
 
 
-            if (transactionDepositDTO.getAmount() <= 0 ) {
-                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_NEGATIVO);
-            } else {
+        if (transactionDepositDTO.getAmount() <= 0) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_NEGATIVO);
+        } else {
 
-                double nuevoBalance = cuenta.get().getBalance() + transactionDepositDTO.getAmount();
-                if (nuevoBalance > cuenta.get().getTransactionLimit()){
-                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_MAYOR_A_DEPOSITO);
-                }
-                cuenta.get().setBalance(nuevoBalance);
-                accountRepository.save(cuenta.get());
-
-                deposito.setAmount(transactionDepositDTO.getAmount());
-                deposito.setType(TransactionType.deposit);
-                deposito.setDescription(transactionDepositDTO.getDescription());
-                deposito.setAccount(cuenta.get());
-
+            double nuevoBalance = cuenta.get().getBalance() + transactionDepositDTO.getAmount();
+            if (nuevoBalance > cuenta.get().getTransactionLimit()) {
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_MAYOR_A_DEPOSITO);
             }
+            cuenta.get().setBalance(nuevoBalance);
+            accountRepository.save(cuenta.get());
+
+            deposito.setAmount(transactionDepositDTO.getAmount());
+            deposito.setType(TransactionType.deposit);
+            deposito.setDescription(transactionDepositDTO.getDescription());
+            deposito.setAccount(cuenta.get());
+
+        }
 
 
         Transaction transactionGuardada = transactionRepository.save(deposito);
@@ -233,22 +227,22 @@ public class TransactionServiceImplementation implements TransactionService {
 
     }
 
-    public List<TransactionDTO> getAllTransactionsFromUser(Long id){
+    public List<TransactionDTO> getAllTransactionsFromUser(Long id) {
 
         List<Transaction> transactionList = transactionRepository.getTransactionsByIdUser(id);
-        if (!transactionList.isEmpty()){
+        if (!transactionList.isEmpty()) {
             return transactionList.stream()
                     .map(TransactionDTO::new)
                     .collect(Collectors.toList());
-        }else{
-            throw new CustomException(HttpStatus.CONFLICT,ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        } else {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
         }
 
     }
 
 
     @Override
-    public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction ){
+    public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction) {
         //Autenticamos el usuario
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
@@ -257,14 +251,14 @@ public class TransactionServiceImplementation implements TransactionService {
 
         String toUpperCaseRole = userSecurityDTO.getRole();
 
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")){
-            if(transaction.isEmpty()){
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
+            if (transaction.isEmpty()) {
                 throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NO_SE_ENCONTRO_ID_TRANSACTION);
             }
             TransactionCompletaDTO transactionMostrar = new TransactionCompletaDTO(transaction.get());
             return transactionMostrar;
-        }else{
-            throw new CustomException(HttpStatus.CONFLICT,"Acceso denegado no es usuario administrador");
+        } else {
+            throw new CustomException(HttpStatus.CONFLICT, "Acceso denegado no es usuario administrador");
         }
     }
 }
