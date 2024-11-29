@@ -5,9 +5,11 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.*;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
-import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -84,69 +85,50 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserDTO create(final CreateUserDTO createUserDTO) throws CustomException{
-
-        User user = User.builder().build();
-
-        if (userRepository.findByEmail(createUserDTO.getEmail()).isEmpty()) {
-            createUserDTO.guardarDTO(user);
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.EMAIL_INCORRECTO);
-        }
-        //hasheo de password
-        String passHash = BCrypt.hashpw(user.getPassword(),BCrypt.gensalt());
-        user.setPassword(passHash);
-        Role role = roleServiceImplementation.findById(2l);
-        user.setRole(role);
-        user = userRepository.save(user);
-        return new UserDTO(user);
-    }
-
-    @Override
-    public User findById(Long id){
+    public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
 
     @Override
-    public Page<FullUserDto> getAll(Pageable pageable){
+    public Page<FullUserDto> getAll(Pageable pageable) {
         return userRepository.findAll(pageable)
                 .map(FullUserDto::new);
     }
 
     @Override
-    public List<AccountDTO> listarCuentasPorUsuario(long userId) throws CustomException{
+    public List<AccountDTO> listarCuentasPorUsuario(long userId) throws CustomException {
         List<Account> listaCuentas = accountRepository.getByIdUser(userId);
 
-        if (listaCuentas.isEmpty()){
+        if (listaCuentas.isEmpty()) {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO);
-        }else {
+        } else {
             return listaCuentas.stream().map(
                     AccountDTO::new
             ).collect(Collectors.toList());
         }
     }
 
-    public UserDTO userDetail(HttpServletRequest request){
+    public UserDTO userDetail(HttpServletRequest request) {
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         User user = userRepository.findById(userSecurityDTO.getId()).orElseThrow(
-                ()-> new CustomException(
-                        HttpStatus.CONFLICT,ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO));
+                () -> new CustomException(
+                        HttpStatus.CONFLICT, ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO));
 
         return new UserDTO(user);
     }
 
     @Override
-    public UpdateUserDTO updateUser(HttpServletRequest request,Long idUser, UpdateUserDTO updateUserDTO){
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
+    public UpdateUserDTO updateUser(HttpServletRequest request, Long idUser, UpdateUserDTO updateUserDTO) {
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
         Optional<User> user = userRepository.findById(idUser);
 
-        if(user.isEmpty()){
+        if (user.isEmpty()) {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.USER_NO_ENCONTRADO);
         }
         user.get().setFirstName(updateUserDTO.getFirstName());
         user.get().setLastName(updateUserDTO.getLastName());
-        String passHash = BCrypt.hashpw(updateUserDTO.getPassword(),BCrypt.gensalt());
+        String passHash = BCrypt.hashpw(updateUserDTO.getPassword(), BCrypt.gensalt());
         user.get().setPassword(passHash);
         User user1 = userRepository.save(user.get());
         return updateUserDTO;

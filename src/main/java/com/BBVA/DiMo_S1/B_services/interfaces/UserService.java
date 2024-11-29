@@ -17,8 +17,6 @@ public interface UserService {
 
     //1- softDelete de un User de la BD.
     void softDelete (HttpServletRequest request, final long idUser);
-
-    UserDTO create(final CreateUserDTO createUserDTO);
     User findById(Long id);
     Page<FullUserDto> getAll(Pageable pageable);
     List<AccountDTO> listarCuentasPorUsuario(long userId)throws CustomException;

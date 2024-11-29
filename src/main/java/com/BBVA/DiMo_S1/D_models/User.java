@@ -1,10 +1,15 @@
 package com.BBVA.DiMo_S1.D_models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 @Builder
@@ -13,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 
 @Entity
-@Table (name = "users")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -30,7 +35,9 @@ public class User {
     private String lastName;
 
     @NotNull(message = "El email no puede ser nulo.")
-    @Email(message = "El email debe tener un formato válido.")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.com$",
+            message = "El email debe tener un formato válido."
+    )
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

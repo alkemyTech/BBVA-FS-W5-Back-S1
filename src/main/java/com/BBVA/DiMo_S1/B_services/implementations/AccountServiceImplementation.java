@@ -8,9 +8,6 @@ import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
-
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.FixedTermDeposit;
@@ -27,10 +24,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,75 +54,103 @@ public class AccountServiceImplementation implements AccountService {
     @Autowired
     private FixedTermDepositServiceImplementation fixedTermDepositServiceImplementation;
 
-    //1- softDelete de un User de la BD.
+    //1- Creacion de una Cuenta.
+    //-----------------------------------------------------------------------------------------------------------
     @Override
-    public void softDelete(long idAccount) throws CustomException {
+    public ShowCreatedAccountDTO createAccount(final long idUser, final CurrencyType currencyType) {
+        ShowCreatedAccountDTO accountDTO;
 
-        //Buscamos la Account por ID. En caso de que no exista, lanzamos excepción.
-        Account account = accountRepository.findById(idAccount)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA));
+        //Obtenemos la lista de cuentas del usuario.
+        List<Account> listaCuentas = accountRepository.getByIdUser(idUser);
 
-        //En caso de que la Account exista, no nos alzanza. Debemos verificar si el campo ("soft_delete" == null).
-        if (account.getSoftDelete() == null) {
-            account.setSoftDelete(LocalDateTime.now());
-            accountRepository.save(account);
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO_ACCOUNT);
+        //Si ya tiene una cuenta en dolares y otra en pesos...
+        if (listaCuentas.size() == 2) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.LIMITE_DE_CUENTAS_ALCANZADO);
         }
-    }
 
-    @Override
-    public AccountDTO createAccount(final Long idUsuario, CurrencyType currencyType) {
-
-        List<Account> listaCuentas = accountRepository.getByIdUser(idUsuario);
-
-        AccountDTO accountDTO;
-
+        //Boolean para determinar si existe cuenta en pesos.
         boolean existeCuentaEnPesos = listaCuentas.size() == 1 && listaCuentas.get(0).
                 getCurrency().equals(CurrencyType.ARS);
 
+        //Si no tiene cuentas o si solo tiene cuenta en pesos y quiere crear una en dolares...
         if (listaCuentas.isEmpty() || (existeCuentaEnPesos && !currencyType.equals(CurrencyType.ARS))) {
-
+            //Inicializamos una cuenta.
             Account account = Account.builder().build();
+            //Traemos el usario de la BD.
+            User user = userRepository.getById(idUser);
 
-            User user = userRepository.getById(idUsuario);
-
+            //Seteamos los datos del usuario.
             account.setUser(user);
-
             account.setBalance(0);
-
             account.setCbu(generateCBU());
-
             account.setCurrency(currencyType);
-
             if (currencyType.equals(CurrencyType.ARS)) {
 
                 account.setTransactionLimit(300000);
-
             } else {
 
                 account.setTransactionLimit(1000);
             }
 
+            //Obtenemos la cuenta guardada en la BD.
             Account accountGuardada = accountRepository.save(account);
 
-            accountDTO = new AccountDTO(accountGuardada);
+            //Seteamos el DTO con los datos de la cuenta guardada.
+            accountDTO = new ShowCreatedAccountDTO(accountGuardada);
 
         } else {
 
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.OPERACION_NO_VALIDA);
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_CUENTA_EN_PESOS_YA_EXISTENTE);
         }
 
         return accountDTO;
     }
+    //-----------------------------------------------------------------------------------------------------------
 
+    //2- Actualizar el limite de transacción de una Cuenta.
+    //------------------------------------------------------------------------------------------------------------
     @Override
-    public Account getAccountByEmail(String email) {
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
-    }
+    public ShowUpdateAccountDTO updateAccount(HttpServletRequest request, UpdateAccountDTO updateAccountDTO,
+                                              String cbu) {
 
-    //Obtener balance de una Account
+        //Verificamos que el limite ingresado sea válido.
+        if (updateAccountDTO.getTransactionLimit() <= 1000) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.LIMITE_TRANSACCION_INVALIDO);
+        }
+
+        ShowUpdateAccountDTO showUpdateAccountDTO;
+
+        //Obtenemos el User autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Buscamos la Account por id.
+        Optional<Account> account = accountRepository.findByCbu(cbu);
+
+        //Si la cuenta existe, no nos alcanza. Debemos verificar si la misma pertenece al User autenticado.
+        if (account.isPresent() && account.get().getUser().getId() == userSecurityDTO.getId()) {
+            //Modificamos el transactionLimit.
+            account.get().setTransactionLimit(updateAccountDTO.getTransactionLimit());
+
+            //Seteamos fecha de actualización.
+            account.get().setUpdateDate(LocalDateTime.now());
+
+            //Guardamos la Account nuevamente en la BD.
+            accountRepository.save(account.get());
+
+            //Seteamos los datos de la account en el DTO.
+            showUpdateAccountDTO = new ShowUpdateAccountDTO(account.get());
+        } else {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.CBU_INVALIDO);
+        }
+
+        return showUpdateAccountDTO;
+    }
+    //------------------------------------------------------------------------------------------------------------------
+
+    //3- Obtener balance de una Cuenta
+    //------------------------------------------------------------------------------------------------------------------
     @Override
     public BalanceDto obtainBalance(HttpServletRequest request) {
 
@@ -149,32 +174,6 @@ public class AccountServiceImplementation implements AccountService {
 
         } else {
 
-            //Antes de setear el balance de la cuenta, debemos verificar si tiene algun Plazo Fijo que ya
-            //venció. En ese caso, hay que actualizar su balance y generar un deposito en su cuenta.
-            //----------------------------------------------------------------------------------------------
-            //1- Obtenego la lista de Plazos Fijos.
-            fixedTermDeposits = fixedTermDepositRepository.getFixedTermDepositByIdUser(userSecurityDTO.getId());
-
-            //2- Mando la lista de FixedTermDeposit por parametro a mi funcion en el servicio del Plazo Fijo.
-            double gananciaPlazoFijo = fixedTermDepositServiceImplementation.calcularPlazoFijo(fixedTermDeposits);
-
-            //3- En caso de que haya algun Plazo Fijo ya vencido, es decir, existe algun tipo de ganancia, debemos
-            //setearle el nuevo balance a la cuenta del User.
-            if (gananciaPlazoFijo != 0) {
-
-                //Obtengo la cuenta en pesos del User.
-                Optional<Account> account = accountRepository.getArsAccountByIdUser(userSecurityDTO.getId());
-
-                //Genero una Transaction del tipo Deposit para que el User se de cuenta de que se le depositó el
-                //Plazo Fijo en su cuenta.
-                TransactionDepositDTO depositoPlazoFijo = TransactionDepositDTO.builder().build();
-                depositoPlazoFijo.setAmount(gananciaPlazoFijo);
-                depositoPlazoFijo.setDescription("Liquidación de Plazo Fijo");
-                depositoPlazoFijo.setCurrencyType(CurrencyType.ARS);
-                transactionServiceImplementation.deposit(request, depositoPlazoFijo);
-            }
-            //----------------------------------------------------------------------------------------------
-
             //Seteamos el balance dependiendo del tipo de cuenta que se trate.
             for (Account account : listAccounts) {
                 if (account.getCurrency().equals(CurrencyType.ARS)) {
@@ -186,7 +185,7 @@ public class AccountServiceImplementation implements AccountService {
 
             //Traemos la lista de Transactions y de FixedTermDeposits del User.
             transactionList = transactionRepository.getTransactionsByIdUser(userSecurityDTO.getId());
-
+            fixedTermDeposits = fixedTermDepositRepository.getFixedTermDepositByIdUser(userSecurityDTO.getId());
 
             List<TransactionDTO> transactionDTOList = transactionList.stream()
                     .map(TransactionDTO::new)
@@ -196,44 +195,65 @@ public class AccountServiceImplementation implements AccountService {
                     .map(FixedTermDepositDTO::new)
                     .collect(Collectors.toList());
 
-            balanceDto.setTransactionDTOList(transactionDTOList);
-            balanceDto.setFixedTermDepositDTOList(fixedTermDepositDTOList);
-
+            balanceDto.setFixedTermDeposits(fixedTermDepositDTOList);
+            balanceDto.setTransactions(transactionDTOList);
         }
 
         return balanceDto;
     }
+    //------------------------------------------------------------------------------------------------------------------
 
+    //4- softDelete de una Cuenta.
+    //-----------------------------------------------------------------------------------------------------------
     @Override
-    public ShowUpdateAccountDTO updateAccount(HttpServletRequest request, UpdateAccountDTO updateAccountDTO, String cbu) {
+    public void softDelete(final HttpServletRequest request, final long id) throws CustomException {
 
-        //Inicializamos vacio el DTO.
-        ShowUpdateAccountDTO showUpdateAccountDTO = ShowUpdateAccountDTO.builder().build();
-
-        //Obtenemos el User autenticado.
+        //Obtenemos el User autenticado
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        //Buscamos la Account por id.
-        Optional <Account> account = accountRepository.findByCbu(cbu);
+        //Buscamos la Account por ID. En caso de que no exista, lanzamos excepción.
+        Account account = accountRepository.findById(userSecurityDTO.getId())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA));
 
-        //Si la cuenta existe, no nos alcanza. Debemos verificar si la misma pertenece al User autenticado.
-        if (account.isPresent() && account.get().getUser().getId() == userSecurityDTO.getId()) {
+        //En caso de que la Account exista...
+        //Verificamos que dicha cuenta no haya sido eliminada
+        if (account.getSoftDelete() == null) {
 
-            //Modificamos el transactionLimit.
-            account.get().setTransactionLimit(updateAccountDTO.getTransactionLimit());
+            //Si la cuenta no fue eliminada...
+            //Si es ADMIN, puede eliminar cualquier cuenta.
+            if (userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
 
-            //Guardamos la Account nuevamente en la BD.
-            accountRepository.save(account.get());
+                //Seteamos la fecha y lo guardamos nuevamente.
+                account.setSoftDelete(LocalDateTime.now());
+                accountRepository.save(account);
 
-            //Seteamos los datos de la account en el DTO.
-            showUpdateAccountDTO = new ShowUpdateAccountDTO(account.get());
+            } else {
+
+                //Por el contrario, si es USER...
+                //Solo puede eliminar una cuenta que sea suya.
+                if (account.getUser().getId() == userSecurityDTO.getId()) {
+
+                    //Seteamos la fecha y lo guardamos nuevamente.
+                    account.setSoftDelete(LocalDateTime.now());
+                    accountRepository.save(account);
+
+                } else {
+
+                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
+                }
+            }
 
         } else {
-
-            throw new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA);
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO_ACCOUNT);
         }
+    }
+    //-----------------------------------------------------------------------------------------------------------
 
-        return showUpdateAccountDTO;
+
+    @Override
+    public Account getAccountByEmail(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
     }
 
     private String generateCBU() {
@@ -252,7 +272,7 @@ public class AccountServiceImplementation implements AccountService {
     }
 
     @Override
-    public Page<AccountPageDTO> getAll(Pageable pageable){
+    public Page<AccountPageDTO> getAll(Pageable pageable) {
         return accountRepository.findAll(pageable)
                 .map(AccountPageDTO::new);
     }

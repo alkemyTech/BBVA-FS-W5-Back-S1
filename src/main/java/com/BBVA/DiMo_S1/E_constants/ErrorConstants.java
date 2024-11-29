@@ -4,9 +4,18 @@ public class ErrorConstants {
 
     public static final String USER_NO_ENCONTRADO = "ERROR! No se encontró ningún User con el ID ingresado.";
 
+    public static final String CONTRASEÑA_INVALIDA = "ERROR! La contraseña no es válida. Debe tener entre 6 y 20 caracteres.";
+
     public static final String DELETE_NO_VALIDO = "ERROR! El User que deseas eliminar ya fue eliminado.";
 
     public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! No se encontro ninguna Account con ese ID";
+
+    public static final String CBU_INVALIDO = "ERROR! El CBU ingresado no es válido.";
+
+    public static final String LOAN_NO_SE_PUEDE_CREAR = "ERROR! Los datos ingresados no cumplen con las condiciones para poder simular el préstamo.";
+
+    public static final String LIMITE_TRANSACCION_INVALIDO = "ERROR! El limite de transacción ingresado no es válido. " +
+            "Debe ser si o si mayor o igual a 1000.";
 
     public static final String DELETE_NO_VALIDO_ACCOUNT = "ERROR! La account que deseas eliminar ya fue eliminada.";
 
@@ -16,7 +25,9 @@ public class ErrorConstants {
 
     public static final String CREDENCIALES_INVALIDAS = "ERROR! Credenciales invalidas!";
 
-    public static final String OPERACION_NO_VALIDA = "ERROR! No se puede crear una cuenta nueva actualmente.";
+    public static final String ERROR_CUENTA_EN_PESOS_YA_EXISTENTE = "ERROR! Ya tenes una cuenta en pesos.";
+
+    public static final String LIMITE_DE_CUENTAS_ALCANZADO = "ERROR! Ya alcanzaste el límite máximo de cuentas.";
 
     public static final String OPERACION_SOLO_ADMIN = "ERROR! No tenes permiso para dar de baja a un User distinto al tuyo.";
 
@@ -46,4 +57,5 @@ public class ErrorConstants {
 
     public static final String ERROR_NO_SE_ENCONTRO_ID_TRANSACTION = "ERROR! No existe una transaction con ese ID";
 
+    public static final String SIN_PERMISO = "ERROR! No tienes permiso para realizar esta operación.";
 }

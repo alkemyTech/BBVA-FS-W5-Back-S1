@@ -11,10 +11,10 @@ import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
+import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
-import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -180,7 +180,6 @@ public class TransactionServiceImplementation implements TransactionService {
         return transactionDTO;
     }
 
-
     @Override
     public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO) {
 
@@ -190,10 +189,9 @@ public class TransactionServiceImplementation implements TransactionService {
         //Extraemos el User autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        Optional<Account> cuenta = null;
+        Optional<Account> cuenta;
 
         List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
-
 
         if (transactionDepositDTO.getCurrencyType().equals(CurrencyType.USD)) {
             cuenta = listAccounts.stream()
