@@ -20,7 +20,7 @@ public interface UserService {
     User findById(Long id);
     Page<FullUserDto> getAll(Pageable pageable);
     List<AccountDTO> listarCuentasPorUsuario(long userId)throws CustomException;
-    UserDTO userDetail(HttpServletRequest request);
+    UserDTO userDetail(Long idUser);
     UpdateUserDTO updateUser(HttpServletRequest request,Long idUser, UpdateUserDTO updateUserDTO);
 
 }

@@ -1,6 +1,7 @@
 package com.BBVA.DiMo_S1.D_dtos.userDTO;
 
 import com.BBVA.DiMo_S1.D_models.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
