@@ -82,9 +82,20 @@ public class UserController {
 
     @GetMapping("/usersProfile")
     public ResponseEntity<UserDTO> userDetail(HttpServletRequest request) {
-        return ResponseEntity.ok(userServiceImplementation.userDetail(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        return ResponseEntity.ok(userServiceImplementation.userDetail(userSecurityDTO.getId()));
     }
 
+    @GetMapping("/usersProfile/{idUser}")
+    public ResponseEntity<UserDTO> findUserDetail(HttpServletRequest request, @PathVariable Long idUser) {
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        if (userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            return ResponseEntity.ok(userServiceImplementation.userDetail(idUser));
+        } else {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+    }
 
     @PatchMapping("/update/{idUser}")
     public ResponseEntity<UpdateUserDTO> userUpdateAdmin(HttpServletRequest request, @RequestBody UpdateUserDTO
