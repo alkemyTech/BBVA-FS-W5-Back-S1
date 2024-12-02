@@ -108,10 +108,9 @@ public class UserServiceImplementation implements UserService {
         }
     }
 
-    public UserDTO userDetail(HttpServletRequest request) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+    public UserDTO userDetail(Long idUser) {
 
-        User user = userRepository.findById(userSecurityDTO.getId()).orElseThrow(
+        User user = userRepository.findById(idUser).orElseThrow(
                 () -> new CustomException(
                         HttpStatus.CONFLICT, ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO));
 
