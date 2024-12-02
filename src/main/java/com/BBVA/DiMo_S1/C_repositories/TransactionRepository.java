@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -16,8 +15,10 @@ import java.util.Optional;
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
     @Query("SELECT tr FROM Transaction tr JOIN FETCH tr.account ac JOIN FETCH ac.user u WHERE u.id = :idUser")
-    Page<Transaction> getTransactionsByIdUser(@Param("idUser") long idUser, Pageable pageable);
+    Page<Transaction> getTransactionsByIdUserPageable(@Param("idUser") long idUser, Pageable pageable);
+
+    @Query("SELECT tr FROM Transaction tr JOIN FETCH tr.account ac JOIN FETCH ac.user u WHERE u.id = :idUser")
+    List<Transaction> getTransactionsByIdUser(@Param("idUser") long idUser);
 
     Optional<Transaction> findByIdAndAccount_UserId(Long id, Long userId);
-    Page<Transaction> findAllByAccount_UserId(Long userId, Pageable pageable);
 }

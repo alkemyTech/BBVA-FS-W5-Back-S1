@@ -185,7 +185,7 @@ public class AccountServiceImplementation implements AccountService {
 
             //Traemos la lista de Transactions y de FixedTermDeposits del User.
             Pageable pageable = Pageable.unpaged();
-            transactionList = transactionRepository.getTransactionsByIdUser(userSecurityDTO.getId(), pageable).getContent();
+            transactionList = transactionRepository.getTransactionsByIdUserPageable(userSecurityDTO.getId(), pageable).getContent();
             fixedTermDeposits = fixedTermDepositRepository.getFixedTermDepositByIdUser(userSecurityDTO.getId());
 
             List<TransactionDTO> transactionDTOList = transactionList.stream()
@@ -250,6 +250,25 @@ public class AccountServiceImplementation implements AccountService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
+    //5- Paginado de cuentas
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request) {
+
+        //Obtenemos el User logueado y el Role.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
+
+            return accountRepository.findAll(pageable)
+                    .map(AccountPageDTO::new);
+        } else {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
+        }
+    }
+    //-----------------------------------------------------------------------------------------------------------
 
     @Override
     public Account getAccountByEmail(String email) {
@@ -270,11 +289,5 @@ public class AccountServiceImplementation implements AccountService {
 
         // Retornar el CBU completo (22 dígitos)
         return cbuBase;
-    }
-
-    @Override
-    public Page<AccountPageDTO> getAll(Pageable pageable) {
-        return accountRepository.findAll(pageable)
-                .map(AccountPageDTO::new);
     }
 }

@@ -3,12 +3,9 @@ package com.BBVA.DiMo_S1.A_controllers;
 import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.LoginUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.ReactivateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.ShowCreatedUserDTO;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Autenticación", description = "auth-controller")
 @Validated
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "A- Autenticación")
 public class AuthController {
 
     @Autowired
     AuthServiceImplementation authServiceImplementation;
-    
+
     //1- Registro de User en el Sistema.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Registrarse en el Sistema", description = "Endpoint para darse de alta en el sistema. " +
@@ -37,14 +34,6 @@ public class AuthController {
             "\n- Los campos deben estar completos, ninguno puede ser nulo." +
             "\n- El formato del mail debe ser de la siguiente manera: (A-Z)@(A-Z).com" +
             "\n- La contraseña debe tener entre 6 y 20 caracteres.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuario creado éxitosamente.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"firstName\":\"Matias\",\"lastName\":\"Lopez\",\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJyb2xlItIi\" }"))),
-            @ApiResponse(responseCode = "400", description = "Error en el ingreso de los campos.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"Errores de Validación\":{\"email\":\"El email debe tener un formato válido.\"},"
-                            + "\"fechaHoraError\":\"2024-11-27T10:11:54.251790800\","
-                            + "\"estado\":400}")))
-    })
     @PostMapping("/register")
     public ShowCreatedUserDTO registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
         return ResponseEntity.ok(authServiceImplementation.createUser(createUserDTO)).getBody();
@@ -58,19 +47,23 @@ public class AuthController {
             "de autorizacion para poder ingresar." +
             "\n\nConsideraciones:" +
             "\n\n- El usuario debe estar previamente registrado y las credenciales deben ser válidas.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Ingreso éxitoso.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"firstName\":\"Matias\",\"lastName\":\"Lopez\",\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJyb2xlItIi\" }"))),
-            @ApiResponse(responseCode = "401", description = "Credenciales inválidas.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"fechaHoraError\":\"2024-11-27T10:19:40.583225100\","
-                            + "\"nombreError\":\"UNAUTHORIZED\","
-                            + "\"mensaje\":\"ERROR! Credenciales invalidas!\","
-                            + "\"estado\":401}")))
-    })
     @PostMapping("/login")
     public ShowCreatedUserDTO login(@RequestBody LoginUserDTO loginUserDTO) {
         return ResponseEntity.ok(authServiceImplementation.login(loginUserDTO.getEmail(),
                 loginUserDTO.getPassword())).getBody();
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //3- Reactivar User dado de baja.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Reactivar Usuario", description = "Endpoint para poder reactivar a un Usuario dado de baja. " +
+            "El endpoint permite a un usuario darse de alta nuevamente en el sistema en caso de haberse dado de baja." +
+            "\n\nConsideraciones:" +
+            "\n\n- El usuario ya debe estar registrado y el email ingresado debe coincidir con el presente en el sistema.")
+    @PostMapping("/reactivate")
+    public ResponseEntity<String> reactivateUser(@RequestBody ReactivateUserDTO reactivateUserDTO) {
+        authServiceImplementation.reactivateUser(reactivateUserDTO);
+        return ResponseEntity.ok("Cuenta reactivada con éxito!");
     }
     //-----------------------------------------------------------------------------------------------------------
 }

@@ -19,17 +19,22 @@ public class TransactionCompletaDTO {
     private TransactionType type;
     private String description;
     private LocalDateTime transactionDate;
-    private String cbuCuenta;
+    private String cuenta;
     private String titular;
+    private String cuentaDestino;
 
-
-    public TransactionCompletaDTO(Transaction transaction){
+    public TransactionCompletaDTO(Transaction transaction) {
         this.amount = transaction.getAmount();
         this.type = transaction.getType();
         this.description = transaction.getDescription();
         this.transactionDate = transaction.getTransactionDate();
-        this.cbuCuenta = transaction.getAccount().getCbu();
+        this.cuenta = transaction.getAccount().getCbu();
         this.titular = (transaction.getAccount().getUser().getFirstName() + " "
                 + transaction.getAccount().getUser().getLastName());
+        if (transaction.getType().equals(TransactionType.payment)) {
+            this.cuentaDestino = transaction.getAccountDestino().getCbu();
+        } else {
+            this.cuentaDestino = null;
+        }
     }
 }

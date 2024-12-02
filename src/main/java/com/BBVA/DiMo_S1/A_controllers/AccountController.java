@@ -4,17 +4,10 @@ import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
-import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
-import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,10 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Gestión de Cuentas", description = "account-controller")
 @Validated
 @RestController
 @RequestMapping("accounts")
+@Tag(name = "B- Gestión de Cuentas")
 public class AccountController {
 
     @Autowired
@@ -42,16 +35,6 @@ public class AccountController {
             "\n\nConsideraciones:" +
             "\n- El tipo de cuenta debe ser ARS o USD. Si se ingresa otro tipo, se lanza excepción." +
             "\n- El límite máximo de cuentas es de 2. Una en ARS y otra en USD.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Cuenta creada con éxito.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"cbu\":\"98821905335515405923\",\"balance\":\"0\",\"currency\":\"USD\"," +
-                            "\"transactionLimit\":\"5000\"}"))),
-            @ApiResponse(responseCode = "409", description = "Límite de cuentas alcanzado.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"fechaHoraError\":\"2024-11-27T17:51:29.421969700\","
-                            + "\"nombreError\":\"CONFLICT\","
-                            + "\"mensaje\":\"ERROR! Ya alcanzaste el límite máximo de cuentas.\","
-                            + "\"estado\":409}")))
-    })
     @PostMapping("/")
     public ResponseEntity<ShowCreatedAccountDTO> createAccount(HttpServletRequest request, @Valid @RequestBody CreateAccountDTO
             createAccountDTO) {
@@ -71,16 +54,6 @@ public class AccountController {
             "\n\nConsideraciones:" +
             "\n- El límite de transacción debe ser de 1000 para arriba. De no ser así, se lanza excepción.." +
             "\n- El CBU debe ser válido. Si el mismo no corresponde a una cuenta del usuario, se lanza excepción.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Cuenta actualizada con éxito.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"cbu\":\"98821905335515405923\",\"currency\":\"ARS\",\"transactionLimit\":\"500000\"," +
-                            "\"balance\":\"0\",\"creationDate\":\"2024-11-27T17:51:29.421969700\",\"updateDate\":\"2024-11-27T17:51:29.421969700\"}"))),
-            @ApiResponse(responseCode = "409", description = "Límite de transacción no válido.", content = @Content(mediaType = "application/json",
-                    schema = @Schema(example = "{\"fechaHoraError\":\"2024-11-27T17:51:29.421969700\","
-                            + "\"nombreError\":\"CONFLICT\","
-                            + "\"mensaje\":\"ERROR! El limite de transacción ingresado no es válido. Debe ser si o si mayor o igual a 1000.\","
-                            + "\"estado\":409}"))),
-    })
     @PatchMapping("/{cbu}")
     public ResponseEntity<ShowUpdateAccountDTO> updateAccount(HttpServletRequest request, @RequestBody
     UpdateAccountDTO updateAccountDTO, @PathVariable String cbu) {
@@ -91,6 +64,9 @@ public class AccountController {
 
     //3- Obtener el balance de una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Obtener balance de Cuenta", description = "Endpoint para obtener el balance de una Cuenta. " +
+            "El endpoint permite al usuario autenticado obtener el balance de su/sus cuenta/s junto con la lista de " +
+            "transacciones y de plazos fijos.")
     @GetMapping("/balance")
     public ResponseEntity<BalanceDto> obtainBalance(HttpServletRequest request) {
 
@@ -98,31 +74,20 @@ public class AccountController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //4- softDelete de una Cuenta.
+    //4- Paginado de cuentas.
     //-----------------------------------------------------------------------------------------------------------
-    @DeleteMapping("/{idAccount}")
-    public ResponseEntity<String> softDelete(final HttpServletRequest request, @Valid @PathVariable @NotNull
-            (message = "El ID de la Account no puede ser nulo.") long idAccount) throws CustomException {
-
-        accountServiceImplementation.softDelete(request, idAccount);
-
-        return ResponseEntity.ok().body("Account con ID = " + idAccount + " eliminado con éxito!");
+    @Operation(summary = "Paginado de Cuentas", description = "Endpoint para paginar las cuentas de los usuarios del sistema. " +
+            "El endpoint permite a un administrador paginar las cuentas presentes en el sistema." +
+            "\n\nConsideraciones:" +
+            "\n\n- El paginado de cuentas esta disponible solamente para usuarios administradores. En caso de " +
+            "que se desee realizar la operación como usuario sin permisos de administrador, se lanzará excepción."
+    )
+    @GetMapping("/admin/page")
+    public ResponseEntity<Page<AccountPageDTO>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int size,
+                                                       HttpServletRequest request) {
+        return ResponseEntity.ok(accountServiceImplementation.getAll(PageRequest.of(page, size), request));
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    @GetMapping("/page")
-    public ResponseEntity<Page<AccountPageDTO>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request
-    ) throws CustomException {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-        String toUpperCaseRole = userSecurityDTO.getRole();
-
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
-            return ResponseEntity.ok(accountServiceImplementation.getAll(PageRequest.of(page, size)));
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.CREDENCIALES_INVALIDAS);
-        }
-    }
 }

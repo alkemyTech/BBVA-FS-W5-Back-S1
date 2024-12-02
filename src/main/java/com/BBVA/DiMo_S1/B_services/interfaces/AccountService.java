@@ -1,9 +1,5 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.BalanceDto;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowCreatedAccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.ShowUpdateAccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.UpdateAccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
@@ -16,18 +12,18 @@ public interface AccountService {
     //1- Creación de una Cuenta.
     ShowCreatedAccountDTO createAccount(final long idUser, final CurrencyType currencyType);
 
-    //2- softDelete de una Cuenta.
-    void softDelete(final HttpServletRequest request, final long idAccount);
-
+    //2- Obtener balance de una Cuenta.
     BalanceDto obtainBalance(HttpServletRequest request);
 
-    Account getAccountByEmail(String email);
-
-    //3- Actualizar Account del User
+    //3- Actualizar Account del User.
     ShowUpdateAccountDTO updateAccount(HttpServletRequest request, UpdateAccountDTO updateAccountDTO, String cbu);
 
-    //4- Paginado de Cuentas
-    Page<AccountPageDTO> getAll(Pageable pageable);
+    //4- softDelete de una Cuenta.
+    void softDelete(final HttpServletRequest request, final long idAccount);
 
+    //5- Paginado de Cuentas.
+    Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request);
+
+    Account getAccountByEmail(String email);
 
 }

@@ -8,7 +8,10 @@ public class ErrorConstants {
 
     public static final String DELETE_NO_VALIDO = "ERROR! El User que deseas eliminar ya fue eliminado.";
 
-    public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! No se encontro ninguna Account con ese ID";
+    public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! El CBU no pertenece a una Account presente en el sistema.";
+
+    public static final String ACCOUNT_NO_ENCONTRADA_O_DADA_DE_BAJA = "ERROR! El CBU no pertenece a una cuenta presente en el sistema " +
+            "o la misma fue dada de baja.";
 
     public static final String CBU_INVALIDO = "ERROR! El CBU ingresado no es válido.";
 
@@ -17,11 +20,13 @@ public class ErrorConstants {
     public static final String LIMITE_TRANSACCION_INVALIDO = "ERROR! El limite de transacción ingresado no es válido. " +
             "Debe ser si o si mayor o igual a 1000.";
 
+    public static final String CUENTA_DESACTIVADA = "ERROR! Tu cuenta se encuentra desactivada temporalmente. Activala para poder ingresar!";
+
     public static final String DELETE_NO_VALIDO_ACCOUNT = "ERROR! La account que deseas eliminar ya fue eliminada.";
 
-    public static final String ACCOUNT_YA_EXISTENTE = "ERROR! Ese ID ya fue ingresado en otra Account.";
-
     public static final String EMAIL_INCORRECTO = "ERROR! El email ingresado ya existe!.";
+
+    public static final String USER_VIGENTE = "ERROR! El email ingresado no corresponde a un usuario que haya sido dado de baja.";
 
     public static final String CREDENCIALES_INVALIDAS = "ERROR! Credenciales invalidas!";
 
@@ -31,9 +36,17 @@ public class ErrorConstants {
 
     public static final String OPERACION_SOLO_ADMIN = "ERROR! No tenes permiso para dar de baja a un User distinto al tuyo.";
 
-    public static final String ERROR_EN_TRANSACCION = "ERROR! No estas en condiciones de poder realizar la transacción deseada.";
+    public static final String ERROR_SIN_CUENTAS = "ERROR! No tenes ninguna cuenta para poder realizar la transacción.";
+
+    public static final String ERROR_AUSENCIA_CUENTA_DOLARES = "ERROR! No tenes ninguna cuenta en USD poder realizar la transacción.";
+
+    public static final String ERROR_AUSENCIA_CUENTA_PESOS = "ERROR! No tenes ninguna cuenta en ARS para poder realizar la transacción.";
+
+    public static final String ERROR_EN_TRANSACCION = "ERROR! No cumplís con las condiciones para poder realizar la transacción deseada.";
 
     public static final String ERROR_CUENTA_PESOS = "ERROR! Para poder crear un Plazo Fijo necesitas tener una cuenta en pesos disponoble.";
+
+    public static final String ERROR_TRANSACTION_NO_ENCONTRADA = "ERROR! No se encontró la transacción buscada.";
 
     public static final String SALDO_NO_DISPONIBLE = "ERROR! No tenes el dinero suficiente para poder realizar la operación que deseas.";
 
@@ -60,4 +73,5 @@ public class ErrorConstants {
     public static final String SIN_PERMISO = "ERROR! No tienes permiso para realizar esta operación.";
 
     public static final String TIPO_ACCOUNT_NO_ENCONTRADO = "ERROR! No existe la cuenta indicada para realizar el pago.";
+
 }
