@@ -3,7 +3,6 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
@@ -46,7 +45,7 @@ public class AccountController {
     @PostMapping("/")
     public ResponseEntity<AccountDTO> createAccount(HttpServletRequest request, @Valid @RequestBody String currencyType) {
 
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         AccountDTO accountCreada = accountServiceImplementation.createAccount(userSecurityDTO.getId(),
                 CurrencyType.valueOf(currencyType.replaceAll("\"", "")));

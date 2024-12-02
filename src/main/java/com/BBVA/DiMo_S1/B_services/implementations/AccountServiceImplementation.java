@@ -10,7 +10,6 @@ import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
 
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.FixedTermDeposit;
@@ -133,7 +132,7 @@ public class AccountServiceImplementation implements AccountService {
         BalanceDto balanceDto = BalanceDto.builder().build();
 
         //Obtenemos el usuario autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         //Obtenemos la lista de cuentas del User.
         List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
@@ -211,7 +210,7 @@ public class AccountServiceImplementation implements AccountService {
         ShowUpdateAccountDTO showUpdateAccountDTO = ShowUpdateAccountDTO.builder().build();
 
         //Obtenemos el User autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         //Buscamos la Account por id.
         Optional <Account> account = accountRepository.findByCbu(cbu);

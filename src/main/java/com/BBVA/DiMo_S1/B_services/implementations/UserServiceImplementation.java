@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +48,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public void softDelete(HttpServletRequest request, long idUser) throws CustomException {
 
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         //Buscamos al User por ID. En caso de que no exista, lanzamos excepción.
         User user = userRepository.findById(idUser)
@@ -127,7 +126,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     public UserDTO userDetail(HttpServletRequest request){
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         User user = userRepository.findById(userSecurityDTO.getId()).orElseThrow(
                 ()-> new CustomException(

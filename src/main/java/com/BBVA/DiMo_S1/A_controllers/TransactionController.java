@@ -45,15 +45,15 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.deposit(request, transactionDepositDTO));
     }
 
-    @GetMapping("/transactions")
+    @GetMapping()
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsUser(HttpServletRequest request) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         return ResponseEntity.ok(transactionServiceImplementation.getAllTransactionsFromUser(userSecurityDTO.getId()));
     }
 
-    @GetMapping("/transactions/{idUser}")
+    @GetMapping("/{idUser}")
     public ResponseEntity<List<TransactionDTO>> getAllTransactionsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
         String toUpperCaseRole = userSecurityDTO.getRole();
         if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
             List<TransactionDTO> transactionDTOList = transactionServiceImplementation.getAllTransactionsFromUser(idUser);
@@ -63,6 +63,7 @@ public class TransactionController {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
         }
     }
+
     @GetMapping("/{idTransaction}")
     public ResponseEntity<TransactionCompletaDTO> obtainTransactionDetail(HttpServletRequest request, @PathVariable Long idTransaction){
         TransactionCompletaDTO transactionDetalle = transactionServiceImplementation.transactionDetail(request,idTransaction);
@@ -82,7 +83,7 @@ public class TransactionController {
 
     }
 
-    @PatchMapping("/transactions/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<?> updateTransactionDescription(
             @PathVariable("id") Long transactionId,
             @RequestBody TransactionUpdateDTO transactionUpdateDTO,

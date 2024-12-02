@@ -56,7 +56,7 @@ public class TransactionServiceImplementation implements TransactionService {
         Transaction transactionDestino = Transaction.builder().build();
 
         //Extraemos el User autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         //Obtenemos la lista de cuentas del User autenticado
         List<Account> listAccounts = accountRepository.getByIdUser(userSecurityDTO.getId());
@@ -188,7 +188,7 @@ public class TransactionServiceImplementation implements TransactionService {
         Transaction deposito = Transaction.builder().build();
 
         //Extraemos el User autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         Optional<Account> cuenta = null;
 
@@ -254,7 +254,7 @@ public class TransactionServiceImplementation implements TransactionService {
     @Override
     public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction) {
         //Autenticamos el usuario
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         //Buscamos una nueva transaction
         Optional<Transaction> transaction = transactionRepository.findById(idTransaction);
@@ -281,7 +281,7 @@ public class TransactionServiceImplementation implements TransactionService {
         }
 
         // Obtener el usuario desde el token
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         // Buscar la cuenta del usuario (considerando tipo de cuenta del DTO)
         Account userAccount = accountRepository.findByUserIdAndCurrency(userSecurityDTO.getId(), CurrencyType.ARS)
@@ -334,7 +334,7 @@ public class TransactionServiceImplementation implements TransactionService {
         }
 
         // Obtener el usuario autenticado desde el token
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
 
         // Buscar la transacción y verificar que pertenece al usuario autenticado
         Transaction transaction = transactionRepository.findByIdAndAccount_UserId(transactionId, userSecurityDTO.getId())
@@ -353,9 +353,9 @@ public class TransactionServiceImplementation implements TransactionService {
     //
     @Override
     public Page<TransactionDTO> getTransactionsByUser(Long userId, int page) {
-        Pageable pageable = PageRequest.of(page, 10); // 10 resultados por página
-        Page<Transaction> transactionPage = transactionRepository.findAllByAccount_UserId(userId, pageable);
+       Pageable pageable = PageRequest.of(page, 10); // 10 resultados por página
+       Page<Transaction> transactionPage = transactionRepository.findAllByAccount_UserId(userId, pageable);
 
-        return transactionPage.map(TransactionDTO::new); // Convertir a DTO
-    }
+       return transactionPage.map(TransactionDTO::new); // Convertir a DTO
+   }
 }

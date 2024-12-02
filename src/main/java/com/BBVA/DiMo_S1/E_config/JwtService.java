@@ -104,7 +104,7 @@ public class JwtService {
         return security;
     }
 
-    public String extractToken(HttpServletRequest request) {
+    public String extraerToken(HttpServletRequest request) {
 
         String token = request.getHeader("Authorization");
 
