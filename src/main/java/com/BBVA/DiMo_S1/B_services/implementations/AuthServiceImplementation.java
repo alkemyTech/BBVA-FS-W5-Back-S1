@@ -4,9 +4,8 @@ import com.BBVA.DiMo_S1.B_services.interfaces.AuthService;
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.ReactivateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.ShowCreatedUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
-import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
@@ -17,12 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -91,23 +86,47 @@ public class AuthServiceImplementation implements AuthService {
 
     //2- Login de User en el sistema.
     //-----------------------------------------------------------------------------------------------------------
+    @Override
     public ShowCreatedUserDTO login(final String email, final String password) {
 
-        //Inicializamos el DTO vacío.
-        ShowCreatedUserDTO showCreatedUserDTO = ShowCreatedUserDTO.builder().build();
+        ShowCreatedUserDTO showCreatedUserDTO;
 
+        //Verificamos si las creedenciales son validas...
         try {
+
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-            Optional<User> user = userRepository.findByEmail(email);
-            showCreatedUserDTO = new ShowCreatedUserDTO(user.get(), jwtService.generateToken(user.get().getId(),
-                    email, user.get().getRole().getName()));
 
         } catch (Exception e) {
 
             throw new CustomException(HttpStatus.UNAUTHORIZED, ErrorConstants.CREDENCIALES_INVALIDAS);
         }
 
+        //Si las credenciales son validas, no alcanza. Debemos validar que el User no haya sido dado de
+        //baja...
+        User user = userRepository.findByEmailAndSoftDeleteIsNull(email)
+                .orElseThrow(() -> new CustomException(HttpStatus.CONFLICT, ErrorConstants.CUENTA_DESACTIVADA));
+
+        //Si no fue dado de baja, cargamos el DTO.
+        showCreatedUserDTO = new ShowCreatedUserDTO(user, jwtService.generateToken(user.getId(),
+                email, user.getRole().getName()));
+
         return showCreatedUserDTO;
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //3- Reactivación del User en el sistema.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public void reactivateUser(final ReactivateUserDTO reactivateUserDTO) {
+
+        //Si no encuentra una cuenta que haya sido dada de baja con ese email..
+        //Lanzamos excepción
+        User user = userRepository.findByEmailAndSoftDeleteNotNull(reactivateUserDTO.getEmail())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_VIGENTE));
+
+        //Si al User se lo encuentra, seteamos el softDelete en null y lo guardamos nuevamente en la BD.
+        user.setSoftDelete(null);
+        userRepository.save(user);
     }
     //-----------------------------------------------------------------------------------------------------------
 }

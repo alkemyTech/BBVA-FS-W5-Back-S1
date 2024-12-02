@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 
@@ -30,6 +31,7 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URL = {
             "auth/register/**",
             "auth/login/**",
+            "auth/reactivate/**",
             "/v1/api-docs/",
             "/v2/api-docs/",
             "/v3/api-docs/**",
