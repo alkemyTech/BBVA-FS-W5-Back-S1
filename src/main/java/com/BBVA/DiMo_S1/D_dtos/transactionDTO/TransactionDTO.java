@@ -3,7 +3,6 @@ package com.BBVA.DiMo_S1.D_dtos.transactionDTO;
 import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,24 +15,25 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
-
-    @JsonIgnore
-    private Long id;
-
     private Double amount;
+    private CurrencyType currencyType;
     private TransactionType type;
     private String description;
     private LocalDateTime transactionDate;
+    private String cuenta;
     private String cuentaDestino;
-    private CurrencyType currencyType;
 
-    public TransactionDTO (Transaction transaction) {
-        this.id = transaction.getId();
+    public TransactionDTO(Transaction transaction) {
+        this.currencyType = transaction.getAccount().getCurrency();
         this.amount = transaction.getAmount();
         this.type = transaction.getType();
         this.description = transaction.getDescription();
         this.transactionDate = transaction.getTransactionDate();
-        this.cuentaDestino = transaction.getAccount().getCbu();
-        this.currencyType = transaction.getAccount().getCurrency();
+        this.cuenta = transaction.getAccount().getCbu();
+        if (transaction.getType().equals(TransactionType.deposit)) {
+            this.cuentaDestino = null;
+        } else {
+            this.cuentaDestino = transaction.getAccountDestino().getCbu();
+        }
     }
 }
