@@ -72,4 +72,6 @@ public class ErrorConstants {
 
     public static final String SIN_PERMISO = "ERROR! No tienes permiso para realizar esta operación.";
 
+    public static final String TIPO_ACCOUNT_NO_ENCONTRADO = "ERROR! No existe la cuenta indicada para realizar el pago.";
+
 }

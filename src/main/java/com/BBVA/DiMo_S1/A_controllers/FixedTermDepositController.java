@@ -10,10 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("fixedTerm")
@@ -36,8 +33,21 @@ public class FixedTermDepositController {
             "\n- Para la liquidación del mismo, deben espetrar: 1 minuto (30 días), 2 minutos (60 días) y 3 minutos (90 días)"
     )
     @PostMapping
-    public ResponseEntity<FixedTermDepositDTO> createAccount(HttpServletRequest request, @Valid @RequestBody
-    CreateFixedTermDepositDTO createFixedTermDepositDTO) {
+    public ResponseEntity<FixedTermDepositDTO> createAccount(HttpServletRequest request, @Valid @RequestBody CreateFixedTermDepositDTO
+            createFixedTermDepositDTO) {
+
+            FixedTermDepositDTO fixedTermDepositDTO = fixedTermDepositServiceImplementation.
+                    createFixedTermDeposit(request, createFixedTermDepositDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(fixedTermDepositDTO);
+    }
+
+    @PostMapping("/simulate")
+    public ResponseEntity<FixedTermDepositDTO> simulate(HttpServletRequest request, @Valid @RequestBody CreateFixedTermDepositDTO
+            createFixedTermDepositDTO) {
+
+        FixedTermDepositDTO fixedTermDepositDTO = fixedTermDepositServiceImplementation.
+                createFixedTermDeposit(request, createFixedTermDepositDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(fixedTermDepositServiceImplementation.
                 createFixedTermDeposit(request, createFixedTermDepositDTO));

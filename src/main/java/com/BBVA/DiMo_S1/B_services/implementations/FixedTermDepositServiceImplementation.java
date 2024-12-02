@@ -84,7 +84,7 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
 
             //Creamos el Plazo Fijo:
             fixedTermDeposit.setAmount(createFixedTermDepositDTO.getAmount());
-            fixedTermDeposit.setInterest(0.2);
+            fixedTermDeposit.setInterest(0.02);
             LocalDateTime horaActual = LocalDateTime.now();
             fixedTermDeposit.setCreationDate(horaActual);
             fixedTermDeposit.setSettled(false); //Como todavia no fue liquidado, lo seteamos en false.
@@ -122,7 +122,7 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
 
         return fixedTermDepositDTO;
     }
-    //-----------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------
 
     //2- Liquidar Plazos Fijos.
     //-----------------------------------------------------------------------------------------------------------------

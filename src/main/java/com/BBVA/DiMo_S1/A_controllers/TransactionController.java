@@ -119,10 +119,18 @@ public class TransactionController {
             "\n\nConsideraciones:" +
             "\n- El usuario debe tener transacciones presentes."
     )
-    @GetMapping("/")
-    public ResponseEntity<List<TransactionDTO>> getAllTransactionsUser(HttpServletRequest request) {
+    @GetMapping()
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionsUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        // Validar el token y obtener información del usuario loggeado
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-        return ResponseEntity.ok(transactionServiceImplementation.getAllTransactionsFromUser(userSecurityDTO.getId()));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(userSecurityDTO.getId(), page);
+
+        return ResponseEntity.ok(transactionPage);
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -134,39 +142,34 @@ public class TransactionController {
             "\n- El usuario autenticado debe ser administrador." +
             "\n- El usuario que se busca debe existir en el sistema y debe tener transacciones presentes."
     )
-    @GetMapping("/admin/list/{idUser}")
-    public ResponseEntity<List<TransactionDTO>> getAllTransactionsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
+    @GetMapping("/admin/{idUser}")
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionsAdmin(
+            HttpServletRequest request,
+            @PathVariable Long idUser,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        // Validar si el usuario tiene rol de administrador
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-        String toUpperCaseRole = userSecurityDTO.getRole();
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
-            List<TransactionDTO> transactionDTOList = transactionServiceImplementation.getAllTransactionsFromUser(idUser);
-            return ResponseEntity.ok(transactionDTOList);
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        if (!"ADMIN".equalsIgnoreCase(userSecurityDTO.getRole())) {
+            throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.ERROR_NOT_ADMIN);
         }
+
+        // Llamar al servicio para obtener las transacciones del usuario especificado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(idUser, page);
+
+        return ResponseEntity.ok(transactionPage);
     }
     //-----------------------------------------------------------------------------------------------------------
 
     //Endpoint para pagos
     @PostMapping("/payment")
-    public ResponseEntity<?> makePayment(@RequestBody TransactionDTO transactionDTO, HttpServletRequest request) {
+    public ResponseEntity<TransactionCompletaDTO> makePayment(@RequestBody TransactionDepositDTO transactionDTO, HttpServletRequest request) {
 
         // Llamar al servicio para procesar el pago
-        var response = transactionServiceImplementation.makePayment(transactionDTO, request);
+        TransactionCompletaDTO transactionCompletaDTO = transactionServiceImplementation.makePayment(transactionDTO, request);
 
         // Devolver respuesta exitosa
-        System.out.println(response);
-        return ResponseEntity.ok(response);
-
+        return ResponseEntity.ok(transactionCompletaDTO);
     }
 
-    //Endpoint para pruebas de paginado
-    @GetMapping("/admin/transactions")
-    public ResponseEntity<Page<TransactionDTO>> getTransactionsByUser(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "0") int page
-    ) {
-        Page<TransactionDTO> transactions = transactionService.getTransactionsByUser(userId, page);
-        return ResponseEntity.ok(transactions);
-    }
 }

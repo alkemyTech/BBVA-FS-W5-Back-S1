@@ -184,7 +184,8 @@ public class AccountServiceImplementation implements AccountService {
             }
 
             //Traemos la lista de Transactions y de FixedTermDeposits del User.
-            transactionList = transactionRepository.getTransactionsByIdUser(userSecurityDTO.getId());
+            Pageable pageable = Pageable.unpaged();
+            transactionList = transactionRepository.getTransactionsByIdUserPageable(userSecurityDTO.getId(), pageable).getContent();
             fixedTermDeposits = fixedTermDepositRepository.getFixedTermDepositByIdUser(userSecurityDTO.getId());
 
             List<TransactionDTO> transactionDTOList = transactionList.stream()
