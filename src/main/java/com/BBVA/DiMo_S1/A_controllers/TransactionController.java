@@ -13,7 +13,6 @@ import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
@@ -46,22 +45,35 @@ public class TransactionController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<TransactionDTO>> getAllTransactionsUser(HttpServletRequest request) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
-        return ResponseEntity.ok(transactionServiceImplementation.getAllTransactionsFromUser(userSecurityDTO.getId()));
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionsUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(userSecurityDTO.getId(), page);
+
+        return ResponseEntity.ok(transactionPage);
     }
 
-    @GetMapping("/{idUser}")
-    public ResponseEntity<List<TransactionDTO>> getAllTransactionsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extraerToken(request));
-        String toUpperCaseRole = userSecurityDTO.getRole();
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
-            List<TransactionDTO> transactionDTOList = transactionServiceImplementation.getAllTransactionsFromUser(idUser);
-            return ResponseEntity.ok(transactionDTOList);
-
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+    @GetMapping("/admin/{idUser}")
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionsAdmin(
+            HttpServletRequest request,
+            @PathVariable Long idUser,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        // Validar si el usuario tiene rol de administrador
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        if (!"ADMIN".equalsIgnoreCase(userSecurityDTO.getRole())) {
+            throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.ERROR_NOT_ADMIN);
         }
+
+        // Llamar al servicio para obtener las transacciones del usuario especificado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(idUser, page);
+
+        return ResponseEntity.ok(transactionPage);
     }
 
     @GetMapping("/{idTransaction}")
@@ -72,7 +84,7 @@ public class TransactionController {
 
     //Endpoint para pagos
     @PostMapping("/payment")
-    public ResponseEntity<?> makePayment(@RequestBody TransactionDTO transactionDTO, HttpServletRequest request){
+    public ResponseEntity<?> makePayment(@RequestBody TransactionDepositDTO transactionDTO, HttpServletRequest request){
 
         // Llamar al servicio para procesar el pago
         var response = transactionServiceImplementation.makePayment(transactionDTO, request);
@@ -107,13 +119,4 @@ public class TransactionController {
         }
     }
 
-    //Endpoint para pruebas de paginado
-    @GetMapping("/admin/transactions")
-    public ResponseEntity<Page<TransactionDTO>> getTransactionsByUser(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "0") int page
-    ) {
-        Page<TransactionDTO> transactions = transactionService.getTransactionsByUser(userId, page);
-        return ResponseEntity.ok(transactions);
-    }
 }

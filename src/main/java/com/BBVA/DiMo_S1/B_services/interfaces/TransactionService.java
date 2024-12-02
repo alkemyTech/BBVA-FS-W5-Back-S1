@@ -21,17 +21,14 @@ public interface TransactionService {
     TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO);
 
 
-    List<TransactionDTO> getAllTransactionsFromUser(Long id);
+    Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page);
 
     //Obtener detalle de una transaction
 
     TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction);
 
-    Map<String, Object> makePayment(TransactionDTO transactionDTO, HttpServletRequest request);
+    TransactionCompletaDTO makePayment(TransactionDepositDTO transactionDTO, HttpServletRequest request);
 
     TransactionDTO updateTransactionDescription(Long transactionId, String newDescription, HttpServletRequest request);
-
-    //Paginado de transactions
-    Page<TransactionDTO> getTransactionsByUser(Long userId, int page);
 
 }

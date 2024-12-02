@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 import java.util.List;
 
 @Builder
@@ -15,8 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BalanceDto {
-    private double balanceArs=0;
-    private double balanceUsd=0;
-    private List<TransactionDTO> transactionDTOList;
-    private  List<FixedTermDepositDTO> fixedTermDepositDTOList;
+    private double balanceArs;
+    private double balanceUsd;
+    private List<TransactionDTO> transactions;
+    private List<FixedTermDepositDTO> fixedTermDeposits;
 }
