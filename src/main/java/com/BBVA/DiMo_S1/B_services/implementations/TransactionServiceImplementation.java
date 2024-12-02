@@ -5,13 +5,11 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.Transaction;
+import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
@@ -48,10 +46,12 @@ public class TransactionServiceImplementation implements TransactionService {
     @Autowired
     private JwtService jwtService;
 
+    //1- Realizar una transaccion de dinero a otra cuenta.
+    //-----------------------------------------------------------------------------------------------------------
     @Override
     public TransactionDTO sendMoney(HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO) {
 
-        //Inicializamos la transaccion vacia.
+        //Inicializamos la transacciones vacias.
         Transaction transactionEmisor = Transaction.builder().build();
         Transaction transactionDestino = Transaction.builder().build();
 
@@ -64,7 +64,7 @@ public class TransactionServiceImplementation implements TransactionService {
         //Validamos en primer lugar que tenga cuentas asociadas.
         if (listAccounts.isEmpty()) {
 
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_SIN_CUENTAS);
         }
 
         //Validamos cual es la accion que quiere realizar el User
@@ -81,7 +81,7 @@ public class TransactionServiceImplementation implements TransactionService {
             //Si no tiene cuenta lanzamos excepcion...
             if (accountEmisora.isEmpty()) {
 
-                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_AUSENCIA_CUENTA_DOLARES);
 
             } else {
 
@@ -91,6 +91,7 @@ public class TransactionServiceImplementation implements TransactionService {
                     throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
                 }
             }
+
         } else {
 
             //Si quiere enviar pesos..
@@ -102,13 +103,14 @@ public class TransactionServiceImplementation implements TransactionService {
             //Si no tiene cuenta lanzamos excepcion...
             if (accountEmisora.isEmpty()) {
 
-                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_AUSENCIA_CUENTA_PESOS);
 
             } else {
 
                 //Si tiene cuenta, hay q ver si la transaccion se puede realizar...
                 if (simpleTransactionDTO.getAmount() > accountEmisora.get().getBalance() ||
-                        simpleTransactionDTO.getAmount() > accountEmisora.get().getTransactionLimit()) {
+                        simpleTransactionDTO.getAmount() > accountEmisora.get().getTransactionLimit() ||
+                        simpleTransactionDTO.getAmount() <= 0) {
                     throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
                 }
             }
@@ -120,8 +122,8 @@ public class TransactionServiceImplementation implements TransactionService {
         //y que exista.
         Optional<Account> accountBuscada = accountRepository.findByCbu(simpleTransactionDTO.getCBU());
 
-        //Si la cuenta buscada existe...
-        if (accountBuscada.isPresent()) {
+        //Si la cuenta buscada existe y no fue dada de baja...
+        if (accountBuscada.isPresent() && accountBuscada.get().getSoftDelete() == null) {
 
             //La asignamos a una cuenta...
             Account accountDestino = accountBuscada.get();
@@ -151,11 +153,13 @@ public class TransactionServiceImplementation implements TransactionService {
                     transactionEmisor.setAmount(simpleTransactionDTO.getAmount());
                     transactionEmisor.setType(TransactionType.payment);
                     transactionEmisor.setAccount(accountEmisora.get());
+                    transactionEmisor.setAccountDestino(accountDestino);
 
                     transactionDestino.setDescription(simpleTransactionDTO.getDescription());
                     transactionDestino.setAmount(simpleTransactionDTO.getAmount());
                     transactionDestino.setType(TransactionType.deposit);
                     transactionDestino.setAccount(accountDestino);
+                    transactionDestino.setAccountDestino(null);
 
                 } else {
 
@@ -166,9 +170,10 @@ public class TransactionServiceImplementation implements TransactionService {
 
                 throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.ERROR_CUENTA_PROPIA);
             }
+
         } else {
 
-            throw new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA);
+            throw new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA_O_DADA_DE_BAJA);
         }
 
         //Si sale bien la transaccion, la guardamos en la BD.
@@ -179,7 +184,10 @@ public class TransactionServiceImplementation implements TransactionService {
 
         return transactionDTO;
     }
+    //-----------------------------------------------------------------------------------------------------------
 
+    //2- Depositar dinero en una Cuenta.
+    //-----------------------------------------------------------------------------------------------------------
     @Override
     public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO) {
 
@@ -222,22 +230,93 @@ public class TransactionServiceImplementation implements TransactionService {
             deposito.setType(TransactionType.deposit);
             deposito.setDescription(transactionDepositDTO.getDescription());
             deposito.setAccount(cuenta.get());
+            deposito.setAccountDestino(null);
 
         }
 
-
         Transaction transactionGuardada = transactionRepository.save(deposito);
-
 
         TransactionCompletaDTO transactionCompletaDTO = new TransactionCompletaDTO(transactionGuardada);
 
         return transactionCompletaDTO;
 
     }
+    //-----------------------------------------------------------------------------------------------------------
 
+    //3- Obtener el detalle de una transaccion buscandola por ID.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction) {
+
+        //Autenticamos el usuario
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Buscamos una nueva transaction
+        Transaction transaction = transactionRepository.findById(idTransaction)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ERROR_NO_SE_ENCONTRO_ID_TRANSACTION));
+
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
+
+            TransactionCompletaDTO transactionMostrar = new TransactionCompletaDTO(transaction);
+
+            return transactionMostrar;
+
+        } else {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
+        }
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //4- Actualizar la descripción de una transaccion.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public TransactionDTO updateTransactionDescription(Long transactionId, TransactionUpdateDTO transactionUpdateDTO, HttpServletRequest request) {
+
+        Transaction transaction;
+
+        //Obtener el usuario autenticado desde el token
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Obtenemos la lista de transacciones del usuario autenticado.
+        List<Transaction> transactionList = transactionRepository.getTransactionsByIdUser(userSecurityDTO.getId());
+
+        if (!transactionList.isEmpty()) {
+
+            //Buscamos la transacción y verificamos que pertenezca al usuario autenticado.
+            transaction = transactionList.stream()
+                    .filter(trans -> trans.getId() == transactionId)
+                    .findFirst()
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ERROR_TRANSACTION_NO_ENCONTRADA));
+
+            //Actualizar la descripción
+            transaction.setDescription(transactionUpdateDTO.getDescription());
+
+            //Guardar la transacción actualizada
+            transactionRepository.save(transaction);
+
+        } else {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        //Retornar la transacción actualizada como DTO
+        return new TransactionDTO(transaction);
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //5- Obtener listado de transacciones mediante ID de usuario.
+    //-----------------------------------------------------------------------------------------------------------
     public List<TransactionDTO> getAllTransactionsFromUser(Long id) {
 
-        List<Transaction> transactionList = transactionRepository.getTransactionsByIdUser(id);
+        //Verificamos que el ID corresponda con un usuario existente...
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        //Si se encuentra, buscamos sus transacciones.
+        List<Transaction> transactionList = transactionRepository.getTransactionsByIdUser(user.getId());
+
         if (!transactionList.isEmpty()) {
             return transactionList.stream()
                     .map(TransactionDTO::new)
@@ -245,30 +324,8 @@ public class TransactionServiceImplementation implements TransactionService {
         } else {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
         }
-
     }
-
-
-    @Override
-    public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction) {
-        //Autenticamos el usuario
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-
-        //Buscamos una nueva transaction
-        Optional<Transaction> transaction = transactionRepository.findById(idTransaction);
-
-        String toUpperCaseRole = userSecurityDTO.getRole();
-
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
-            if (transaction.isEmpty()) {
-                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NO_SE_ENCONTRO_ID_TRANSACTION);
-            }
-            TransactionCompletaDTO transactionMostrar = new TransactionCompletaDTO(transaction.get());
-            return transactionMostrar;
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, "Acceso denegado no es usuario administrador");
-        }
-    }
+    //-----------------------------------------------------------------------------------------------------------
 
     @Override
     @Transactional
@@ -324,36 +381,10 @@ public class TransactionServiceImplementation implements TransactionService {
         return response;
     }
 
-    @Transactional
-    @Override
-    public TransactionDTO updateTransactionDescription(Long transactionId, String newDescription, HttpServletRequest request) {
-        if (newDescription == null || newDescription.trim().isEmpty()) {
-            throw new IllegalArgumentException("La descripción no puede estar vacía.");
-        }
-
-        // Obtener el usuario autenticado desde el token
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-
-        // Buscar la transacción y verificar que pertenece al usuario autenticado
-        Transaction transaction = transactionRepository.findByIdAndAccount_UserId(transactionId, userSecurityDTO.getId())
-                .orElseThrow(() -> new IllegalArgumentException("La transacción no existe o no pertenece al usuario autenticado."));
-
-        // Actualizar la descripción
-        transaction.setDescription(newDescription);
-
-        // Guardar la transacción actualizada
-        transactionRepository.save(transaction);
-
-        // Retornar la transacción actualizada como DTO
-        return new TransactionDTO(transaction);
-    }
-
-    //
     @Override
     public Page<TransactionDTO> getTransactionsByUser(Long userId, int page) {
         Pageable pageable = PageRequest.of(page, 10); // 10 resultados por página
         Page<Transaction> transactionPage = transactionRepository.findAllByAccount_UserId(userId, pageable);
-
         return transactionPage.map(TransactionDTO::new); // Convertir a DTO
     }
 }
