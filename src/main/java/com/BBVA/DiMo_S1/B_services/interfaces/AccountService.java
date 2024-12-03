@@ -1,7 +1,6 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
-import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -23,7 +22,6 @@ public interface AccountService {
 
     //5- Paginado de Cuentas.
     Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request);
-
-    Account getAccountByEmail(String email);
+    
 
 }

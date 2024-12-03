@@ -243,7 +243,6 @@ public class AccountServiceImplementation implements AccountService {
                     throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
                 }
             }
-
         } else {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO_ACCOUNT);
         }
@@ -269,13 +268,7 @@ public class AccountServiceImplementation implements AccountService {
         }
     }
     //-----------------------------------------------------------------------------------------------------------
-
-    @Override
-    public Account getAccountByEmail(String email) {
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
-    }
-
+    
     private String generateCBU() {
         Random rand = new Random();
         // Generar código de banco de 3 dígitos (por ejemplo, Banco Nación: 001)
