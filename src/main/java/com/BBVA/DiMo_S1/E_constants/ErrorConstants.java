@@ -4,7 +4,11 @@ public class ErrorConstants {
 
     public static final String USER_NO_ENCONTRADO = "ERROR! No se encontró ningún User con el ID ingresado.";
 
+    public static final String USER_NO_ENCONTRADO_O_ELIMINADO = "ERROR! El user con el ID ingresado no existe o fue eliminado.";
+
     public static final String CONTRASEÑA_INVALIDA = "ERROR! La contraseña no es válida. Debe tener entre 6 y 20 caracteres.";
+
+    public static final String USER_SIN_CUENTAS = "ERROR! El usuario no tiene ninguna cuenta creada.";
 
     public static final String DELETE_NO_VALIDO = "ERROR! El User que deseas eliminar ya fue eliminado.";
 

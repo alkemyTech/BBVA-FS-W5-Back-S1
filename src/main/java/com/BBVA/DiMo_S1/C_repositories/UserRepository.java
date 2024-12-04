@@ -22,5 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.email = :email AND u.softDelete IS NULL")
     Optional<User> findByEmailAndSoftDeleteIsNull(@Param("email") String email);
 
+    @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.id = :idUser AND u.softDelete IS NULL")
+    Optional<User> findByIdAndSoftDeleteIsNull(@Param("idUser") long idUser);
+
     Page<User> findAll(Pageable pageable);
 }

@@ -54,7 +54,27 @@ public class AccountServiceImplementation implements AccountService {
     @Autowired
     private FixedTermDepositServiceImplementation fixedTermDepositServiceImplementation;
 
-    //1- Creacion de una Cuenta.
+    //1- Mostrar las cuentas pertenecientes al usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public List<AccountPageDTO> getAccounts(HttpServletRequest request) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Obtenemos la lista de cuentas pertenecientes al usuario.
+        List<Account> accountList = accountRepository.getByIdUser(userSecurityDTO.getId());
+
+        if (accountList.isEmpty()) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.USER_SIN_CUENTAS);
+        }
+
+        return accountList.stream().map(AccountPageDTO::new).collect(Collectors.toList());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //2- Creacion de una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public ShowCreatedAccountDTO createAccount(final long idUser, final CurrencyType currencyType) {
@@ -107,7 +127,7 @@ public class AccountServiceImplementation implements AccountService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Actualizar el limite de transacción de una Cuenta.
+    //3- Actualizar el limite de transacción de una Cuenta.
     //------------------------------------------------------------------------------------------------------------
     @Override
     public ShowUpdateAccountDTO updateAccount(HttpServletRequest request, UpdateAccountDTO updateAccountDTO,
@@ -149,7 +169,7 @@ public class AccountServiceImplementation implements AccountService {
     }
     //------------------------------------------------------------------------------------------------------------------
 
-    //3- Obtener balance de una Cuenta
+    //4- Obtener balance de una Cuenta
     //------------------------------------------------------------------------------------------------------------------
     @Override
     public BalanceDto obtainBalance(HttpServletRequest request) {
@@ -204,53 +224,35 @@ public class AccountServiceImplementation implements AccountService {
     }
     //------------------------------------------------------------------------------------------------------------------
 
-    //4- softDelete de una Cuenta.
+    //5- Mostrar las cuentas pertenecientes a un determinado usuario buscandolo por id.
     //-----------------------------------------------------------------------------------------------------------
     @Override
-    public void softDelete(final HttpServletRequest request, final long id) throws CustomException {
+    public List<AccountPageDTO> getAccountsAdmin(HttpServletRequest request, Long idUser) {
 
-        //Obtenemos el User autenticado
+        //Obtenemos el usuario autenticado y el rol.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        //Buscamos la Account por ID. En caso de que no exista, lanzamos excepción.
-        Account account = accountRepository.findById(userSecurityDTO.getId())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA));
-
-        //En caso de que la Account exista...
-        //Verificamos que dicha cuenta no haya sido eliminada
-        if (account.getSoftDelete() == null) {
-
-            //Si la cuenta no fue eliminada...
-            //Si es ADMIN, puede eliminar cualquier cuenta.
-            if (userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
-
-                //Seteamos la fecha y lo guardamos nuevamente.
-                account.setSoftDelete(LocalDateTime.now());
-                accountRepository.save(account);
-
-            } else {
-
-                //Por el contrario, si es USER...
-                //Solo puede eliminar una cuenta que sea suya.
-                if (account.getUser().getId() == userSecurityDTO.getId()) {
-
-                    //Seteamos la fecha y lo guardamos nuevamente.
-                    account.setSoftDelete(LocalDateTime.now());
-                    accountRepository.save(account);
-
-                } else {
-
-                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
-                }
-            }
-
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO_ACCOUNT);
+        //Validamos que el usuario autenticado sea administrador.
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
         }
+
+        //Buscamos al usuario que se quiere actualizar y lanzamos excepción si no existe.
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        List<Account> accountList = accountRepository.getByIdUser(user.getId());
+
+        if (accountList.isEmpty()) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.USER_SIN_CUENTAS);
+        }
+
+        return accountList.stream().map(AccountPageDTO::new).collect(Collectors.toList());
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //5- Paginado de cuentas
+    //6- Paginado de cuentas
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request) {
@@ -269,12 +271,6 @@ public class AccountServiceImplementation implements AccountService {
         }
     }
     //-----------------------------------------------------------------------------------------------------------
-
-    @Override
-    public Account getAccountByEmail(String email) {
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
-    }
 
     private String generateCBU() {
         Random rand = new Random();

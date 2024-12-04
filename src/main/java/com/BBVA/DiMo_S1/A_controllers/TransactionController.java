@@ -2,7 +2,10 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.TransactionServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.interfaces.TransactionService;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.*;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionUpdateDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
@@ -15,8 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
@@ -66,7 +67,26 @@ public class TransactionController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //3- Depositar dinero en una Cuenta.
+    //3- Realizar el pago de servicios.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Pago de servicios", description = "Endpoint para realizar el pago de servicios. " +
+            "El endpoint permite al usuario autenticado realizar el pago de servicios." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario debe tener la cuenta especificada." +
+            "\n- El monto a depositar debe ser mayor a 0 y menor al limite de transaccion."
+    )
+    @PostMapping("/payment")
+    public ResponseEntity<TransactionDTO> makePayment(@RequestBody TransactionDepositDTO transactionDTO, HttpServletRequest request) {
+
+        // Llamar al servicio para procesar el pago
+        TransactionDTO transactionCompletaDTO = transactionServiceImplementation.makePayment(transactionDTO, request);
+
+        // Devolver respuesta exitosa
+        return ResponseEntity.ok(transactionCompletaDTO);
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //4- Depositar dinero en una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Depositar dinero en una cuenta", description = "Endpoint para realizar un depósito en una cuenta. " +
             "El endpoint permite al usuario autenticado realizar un depósito en la cuenta especificada." +
@@ -75,23 +95,8 @@ public class TransactionController {
             "\n- El monto a depositar debe ser mayor a 0."
     )
     @PostMapping("/deposit")
-    public ResponseEntity<TransactionCompletaDTO> deposit(@RequestBody TransactionDepositDTO transactionDepositDTO, HttpServletRequest request) {
+    public ResponseEntity<TransactionDTO> deposit(@RequestBody TransactionDepositDTO transactionDepositDTO, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceImplementation.deposit(request, transactionDepositDTO));
-    }
-    //-----------------------------------------------------------------------------------------------------------
-
-    //4- Ver el detalle de una transaccion buscandola por ID.
-    //-----------------------------------------------------------------------------------------------------------
-    @Operation(summary = "Ver detalle de una transacción", description = "Endpoint para poder ver detalle de una transacción. " +
-            "El endpoint permite al usuario administrador ver el detalle de una transacción buscandola por ID." +
-            "\n\nConsideraciones:" +
-            "\n- El usuario autenticado debe ser administrador." +
-            "\n- El ID de transacción enviado debe coincidir con una transacción perteneciente al usuario autenticado."
-    )
-    @GetMapping("admin/detail/{idTransaction}")
-    public ResponseEntity<TransactionCompletaDTO> obtainTransactionDetail(HttpServletRequest request, @PathVariable Long idTransaction) {
-        TransactionCompletaDTO transactionDetalle = transactionServiceImplementation.transactionDetail(request, idTransaction);
-        return ResponseEntity.ok(transactionDetalle);
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -115,11 +120,12 @@ public class TransactionController {
     //6- Obtener listado de transacciones para usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Obtener listado de transacciones", description = "Endpoint para obtener listado de transacciones. " +
-            "El endpoint permite al usuario autenticado obtener el listado de sus transacciones realizadas." +
+            "El endpoint permite al usuario autenticado obtener el listado de sus transacciones realizadas. Las mismas, pueden " +
+            "ser paginadas." +
             "\n\nConsideraciones:" +
             "\n- El usuario debe tener transacciones presentes."
     )
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<Page<TransactionDTO>> getAllTransactionsUser(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page
@@ -137,7 +143,7 @@ public class TransactionController {
     //7- Obtener listado de transacciones como usuario autenticado con rol administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Obtener listado de transacciones como administrador", description = "Endpoint para obtener listado de transacciones. " +
-            "El endpoint permite al usuario administrador obtener el listado de transacciones realizadas pertenecientes a un  determinado usuario." +
+            "El endpoint permite al usuario administrador obtener el listado de transacciones realizadas pertenecientes a un determinado usuario buscado por ID." +
             "\n\nConsideraciones:" +
             "\n- El usuario autenticado debe ser administrador." +
             "\n- El usuario que se busca debe existir en el sistema y debe tener transacciones presentes."
@@ -161,15 +167,19 @@ public class TransactionController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //Endpoint para pagos
-    @PostMapping("/payment")
-    public ResponseEntity<TransactionCompletaDTO> makePayment(@RequestBody TransactionDepositDTO transactionDTO, HttpServletRequest request) {
-
-        // Llamar al servicio para procesar el pago
-        TransactionCompletaDTO transactionCompletaDTO = transactionServiceImplementation.makePayment(transactionDTO, request);
-
-        // Devolver respuesta exitosa
-        return ResponseEntity.ok(transactionCompletaDTO);
+    //7- Ver el detalle de una transaccion buscandola por ID.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Ver detalle de una transacción", description = "Endpoint para poder ver detalle de una transacción. " +
+            "El endpoint permite al usuario autenticado ver el detalle de una transacción buscandola por ID." +
+            "\n\nConsideraciones:" +
+            "\n- El endpoint puede ser accesible tanto por un usuario con rol de USER como por un usuario con rol de ADMIN. " +
+            "La diferencia entre ambos va a estar en que, en el caso del adminstrador, va a poder ver todas las transacciones " +
+            "que busque y que estén dentro del sistema, le pertenezcan o no. Por el contrario, en el caso del usuario con rol USER, " +
+            "solo va a poder ver aquellas transacciones que, obviamente esten dentro del sistema y además, que le pertenezcan."
+    )
+    @GetMapping("detail/{idTransaction}")
+    public ResponseEntity<TransactionDTO> obtainTransactionDetailAdmin(HttpServletRequest request, @PathVariable Long idTransaction) {
+        return ResponseEntity.ok(transactionServiceImplementation.transactionDetail(request, idTransaction));
     }
-
+    //-----------------------------------------------------------------------------------------------------------
 }

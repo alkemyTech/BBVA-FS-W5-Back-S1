@@ -16,10 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Validated
 @RestController
 @RequestMapping("accounts")
-@Tag(name = "B- Gestión de Cuentas")
+@Tag(name = "B- Cuentas")
 public class AccountController {
 
     @Autowired
@@ -28,9 +30,22 @@ public class AccountController {
     @Autowired
     JwtService jwtService;
 
-    //1- Creacion de una Cuenta.
+    //1- Obtener las cuentas pertenecientes al usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
-    @Operation(summary = "Creación de una Cuenta", description = "Endpoint para crear una Cuenta. " +
+    @Operation(summary = "Obtener cuentas creadas", description = "Endpoint para obtener las cuentas creadas. " +
+            "El endpoint permite al usuario autenticado obtener sus cuentas presentes en el sistema." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario autenticado debe tener cuentas presentes en el sistema."
+    )
+    @GetMapping("/")
+    public ResponseEntity<List<AccountPageDTO>> getAccounts(HttpServletRequest request) {
+        return ResponseEntity.ok(accountServiceImplementation.getAccounts(request));
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //2- Creacion de una Cuenta.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Creación de una cuenta", description = "Endpoint para crear una Cuenta. " +
             "El endpoint permite al usuario autenticado crear una cuenta en ARS o USD." +
             "\n\nConsideraciones:" +
             "\n- El tipo de cuenta debe ser ARS o USD. Si se ingresa otro tipo, se lanza excepción." +
@@ -46,9 +61,9 @@ public class AccountController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Actualizacion del limite de transaccion de una Cuenta.
+    //3- Actualizacion del limite de transaccion de una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
-    @Operation(summary = "Actualización de una Cuenta", description = "Endpoint para actualizar el límite de " +
+    @Operation(summary = "Actualización de una cuenta", description = "Endpoint para actualizar el límite de " +
             "transacción de una Cuenta. " + "El endpoint permite al usuario autenticado actualizar el limite de " +
             "transacción de su cuenta buscandola por CBU." +
             "\n\nConsideraciones:" +
@@ -62,9 +77,9 @@ public class AccountController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //3- Obtener el balance de una Cuenta.
+    //4- Obtener el balance de una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
-    @Operation(summary = "Obtener balance de Cuenta", description = "Endpoint para obtener el balance de una Cuenta. " +
+    @Operation(summary = "Obtener balance de cuenta", description = "Endpoint para obtener el balance de una Cuenta. " +
             "El endpoint permite al usuario autenticado obtener el balance de su/sus cuenta/s junto con la lista de " +
             "transacciones y de plazos fijos.")
     @GetMapping("/balance")
@@ -74,20 +89,34 @@ public class AccountController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //4- Paginado de cuentas.
+    //5- Mostrar las cuentas pertenecientes a un determinado usuario buscandolo por id.
     //-----------------------------------------------------------------------------------------------------------
-    @Operation(summary = "Paginado de Cuentas", description = "Endpoint para paginar las cuentas de los usuarios del sistema. " +
-            "El endpoint permite a un administrador paginar las cuentas presentes en el sistema." +
+    @Operation(summary = "Obtener cuentas creadas", description = "Endpoint para obtener las cuentas creadas. " +
+            "El endpoint permite a un administrador obtener las cuentas creadas pertenecientes a un determinado usuario buscandolo por ID" +
+            "\n\nConsideraciones:" +
+            "\n- El usuario autenticado debe ser administrador." +
+            "\n- El usuario buscado debe existir en el sistema." +
+            "\n- El usuario buscado debe tener cuentas presentes en el sistema."
+    )
+    @GetMapping("/admin/{idUser}")
+    public ResponseEntity<List<AccountPageDTO>> getAccountsAdmin(HttpServletRequest request, @PathVariable Long idUser) {
+        return ResponseEntity.ok(accountServiceImplementation.getAccountsAdmin(request, idUser));
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //6- Paginado de cuentas.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Obtener cuentas creadas", description = "Endpoint para obtener las cuentas creadas de los usuarios del sistema. " +
+            "El endpoint permite a un administrador obtener las cuentas presentes en el sistema." +
             "\n\nConsideraciones:" +
             "\n\n- El paginado de cuentas esta disponible solamente para usuarios administradores. En caso de " +
             "que se desee realizar la operación como usuario sin permisos de administrador, se lanzará excepción."
     )
-    @GetMapping("/admin/page")
+    @GetMapping("/admin/")
     public ResponseEntity<Page<AccountPageDTO>> getAll(@RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "10") int size,
                                                        HttpServletRequest request) {
         return ResponseEntity.ok(accountServiceImplementation.getAll(PageRequest.of(page, size), request));
     }
     //-----------------------------------------------------------------------------------------------------------
-
 }

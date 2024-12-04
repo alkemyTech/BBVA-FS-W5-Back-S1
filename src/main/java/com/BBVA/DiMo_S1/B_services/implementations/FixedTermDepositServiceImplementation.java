@@ -5,7 +5,7 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.FixedTermDepositRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.CreateFixedTermDepositDTO;
-import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.ShowSimulatedFixedTermDeposit;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.FixedTermDeposit;
@@ -48,7 +48,7 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
     //1- Creación de un Plazo Fijo.
     //-----------------------------------------------------------------------------------------------------------------
     @Override
-    public FixedTermDepositDTO createFixedTermDeposit(HttpServletRequest request, CreateFixedTermDepositDTO
+    public ShowSimulatedFixedTermDeposit createFixedTermDeposit(HttpServletRequest request, CreateFixedTermDepositDTO
             createFixedTermDepositDTO) {
 
         //Inicializamos de forma vacía un Plazo Fijo.
@@ -63,62 +63,76 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_CREACION_PLAZO_FIJO);
         }
 
-        //Si las 2 primeras condiciones se cumplen, vamos a obtener el User que esta en la sesión.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        //Si no es una simulación...
+        if (!request.getRequestURI().contains("/simulate")) {
 
-        //Una vez que obtenemos el User, validamos que el mismo tenga una cuenta en pesos creada.
-        Account account = accountRepository.getArsAccountByIdUser(userSecurityDTO.getId())
-                .orElseThrow(() -> new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_CUENTA_PESOS));
+            //Vamos a obtener el User que esta en la sesión.
+            UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        //Si tiene una cuenta, debemos verificar que este en condiciones para poder crear el Plazo Fijo.
-        //----------------------------------------------------------------------------------------------
-        //Si el monto del Plazo Fijo es mayor al balance, lanzamos excepcion.
-        if (createFixedTermDepositDTO.getAmount() > account.getBalance()) {
+            //Una vez que obtenemos el User, validamos que el mismo tenga una cuenta en pesos creada.
+            Account account = accountRepository.getArsAccountByIdUser(userSecurityDTO.getId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_CUENTA_PESOS));
 
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SALDO_NO_DISPONIBLE);
+            //Si tiene una cuenta, debemos verificar que este en condiciones para poder crear el Plazo Fijo.
+            //Si el monto del Plazo Fijo es mayor al balance, lanzamos excepcion.
+            if (createFixedTermDepositDTO.getAmount() > account.getBalance()) {
 
-        } else {
-
-            //Si el Usuario esta en condiciones de poder realizar el Plazo Fijo (los dias son corectos, el monto
-            //> 1000, tiene cuenta en pesos y tiene saldo suficiente).
-
-            //Creamos el Plazo Fijo:
-            fixedTermDeposit.setAmount(createFixedTermDepositDTO.getAmount());
-            fixedTermDeposit.setInterest(0.02);
-            LocalDateTime horaActual = LocalDateTime.now();
-            fixedTermDeposit.setCreationDate(horaActual);
-            fixedTermDeposit.setSettled(false); //Como todavia no fue liquidado, lo seteamos en false.
-
-            //En caso de que el Plazo Fijo sea de 30 dias, la fecha de vencimiento va a ser la actual + 1 minuto.
-            //Si es de 60 +2 y asi sucesivamente...
-            if (createFixedTermDepositDTO.getCantidadDias() == 30) {
-
-                fixedTermDeposit.setClosingDate(horaActual.plusMinutes(1l));
-
-            } else if (createFixedTermDepositDTO.getCantidadDias() == 30) {
-
-                fixedTermDeposit.setClosingDate(horaActual.plusMinutes(2l));
-
-            } else {
-
-                fixedTermDeposit.setClosingDate(horaActual.plusMinutes(3l));
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SALDO_NO_DISPONIBLE);
             }
 
-            fixedTermDeposit.setAccount(account);
+            //Como todavia no fue liquidado, lo seteamos en false.
+            fixedTermDeposit.setSettled(false);
 
-            //Una vez que seteamos todos los campos del Plazo Fijo, le sacamos el dinero al
-            //Usuario de su Account ya que el mismo fue invertido en la creacion del Plazo.
+            //Seteamos la cuenta en el Plazo Fijo y actualizamos el balance del usuario.
+            fixedTermDeposit.setAccount(account);
             double balanceActualizado = account.getBalance() - createFixedTermDepositDTO.getAmount();
             account.setBalance(balanceActualizado);
             accountRepository.save(account);
+
+        } else {
+
+            //Si es una simulacion...
+            //Seteamos el settled en true y la cuenta en null.
+            fixedTermDeposit.setSettled(true);
+            fixedTermDeposit.setAccount(null);
         }
-        //----------------------------------------------------------------------------------------------
 
-        //Guardamos el Plazo Fijo.
-        FixedTermDeposit fixedTermDepositGuardado = fixedTermDepositRepository.save(fixedTermDeposit);
+        //Seteamos los demas campos. Son iguales tanto para la creacion del Plazo Fijo como para
+        //su simulacion
+        fixedTermDeposit.setAmount(createFixedTermDepositDTO.getAmount());
+        fixedTermDeposit.setInterest(0.02);
+        LocalDateTime horaActual = LocalDateTime.now();
+        fixedTermDeposit.setCreationDate(horaActual);
 
-        //Cargamos el DTO para poder mostrarlo.
-        FixedTermDepositDTO fixedTermDepositDTO = new FixedTermDepositDTO(fixedTermDepositGuardado);
+        //En caso de que el Plazo Fijo sea de 30 dias, la fecha de vencimiento va a ser la actual + 1 minuto.
+        //Si es de 60 +2 y asi sucesivamente...
+        if (createFixedTermDepositDTO.getCantidadDias() == 30) {
+
+            fixedTermDeposit.setClosingDate(horaActual.plusMinutes(1l));
+
+        } else if (createFixedTermDepositDTO.getCantidadDias() == 30) {
+
+            fixedTermDeposit.setClosingDate(horaActual.plusMinutes(2l));
+
+        } else {
+
+            fixedTermDeposit.setClosingDate(horaActual.plusMinutes(3l));
+        }
+
+        //Inicializamos el DTO.
+        ShowSimulatedFixedTermDeposit fixedTermDepositDTO;
+
+        if (!request.getRequestURI().contains("/simulate")) {
+            //Guardamos el Plazo Fijo.
+            fixedTermDepositRepository.save(fixedTermDeposit);
+            fixedTermDepositDTO = new
+                    ShowSimulatedFixedTermDeposit(fixedTermDeposit, 0, 0);
+        } else {
+            double interesGanado = calcularPlazoFijo(fixedTermDeposit) - fixedTermDeposit.getAmount();
+            double valorFinal = calcularPlazoFijo(fixedTermDeposit);
+            fixedTermDepositDTO = new
+                    ShowSimulatedFixedTermDeposit(fixedTermDeposit, interesGanado, valorFinal);
+        }
 
         return fixedTermDepositDTO;
     }
@@ -166,13 +180,11 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
                 double balanceActualizado = account.get().getBalance() + gananciaPlazoFijo;
                 account.get().setBalance(balanceActualizado);
                 accountRepository.save(account.get());
-
             }
             //----------------------------------------------------------------------------------------------
         }
     }
     //-----------------------------------------------------------------------------------------------------------------
-
 
     //Calcular Plazo Fijo.
     //-----------------------------------------------------------------------------------------------------------------
@@ -189,15 +201,15 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
         if (Duration.between(fixedTermDeposit.getCreationDate(), fixedTermDeposit.getClosingDate())
                 .toMinutes() == 1) {
 
-            ganancia = (fixedTermDeposit.getAmount() * 0.002) * 30;
+            ganancia = (fixedTermDeposit.getAmount() * fixedTermDeposit.getInterest()) * 30;
 
         } else if (Duration.between(fixedTermDeposit.getCreationDate(), fixedTermDeposit.getClosingDate())
                 .toMinutes() == 2) {
-            ganancia = (fixedTermDeposit.getAmount() * 0.002) * 60;
+            ganancia = (fixedTermDeposit.getAmount() * fixedTermDeposit.getInterest()) * 60;
 
         } else {
 
-            ganancia = (fixedTermDeposit.getAmount() * 0.002) * 90;
+            ganancia = (fixedTermDeposit.getAmount() * fixedTermDeposit.getInterest()) * 90;
         }
 
         valorFinal = valorFinal + (fixedTermDeposit.getAmount() + ganancia);
