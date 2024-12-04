@@ -4,23 +4,19 @@ import com.BBVA.DiMo_S1.B_services.interfaces.TransactionService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.*;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionCompletaDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionUpdateDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.Transaction;
-import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TransactionServiceImplementation implements TransactionService {
@@ -188,10 +183,54 @@ public class TransactionServiceImplementation implements TransactionService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Depositar dinero en una Cuenta.
+    //2- Realizar pago de servicio.
     //-----------------------------------------------------------------------------------------------------------
     @Override
-    public TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO) {
+    public TransactionDTO makePayment(TransactionDepositDTO transactionDepositDTO, HttpServletRequest request) {
+
+        // Obtener el usuario desde el token
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Buscar la cuenta del usuario (considerando tipo de cuenta del DTO)
+        Optional<Account> userAccount = accountRepository.findByUserIdAndCurrency(userSecurityDTO.getId(),
+                transactionDepositDTO.getCurrencyType());
+
+
+        // Verificar que haya suficiente saldo en la cuenta del usuario
+        if (userAccount.isEmpty() || userAccount.get().getBalance() < transactionDepositDTO.getAmount()
+                || transactionDepositDTO.getAmount() > userAccount.get().getTransactionLimit()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+        }
+
+        // Registrar la transacción como payment
+        Transaction payment = Transaction.builder()
+                .amount(transactionDepositDTO.getAmount())
+                .type(TransactionType.payment)
+                .description(transactionDepositDTO.getDescription())
+                .transactionDate(LocalDateTime.now())
+                .account(userAccount.get())
+                .accountDestino(null)// La cuenta del usuario
+                .build();
+
+        // Guardar la transacción
+        transactionRepository.save(payment);
+
+        // Actualizar el balance de la cuenta del usuario
+        userAccount.get().setBalance(userAccount.get().getBalance() - transactionDepositDTO.getAmount());
+        accountRepository.save(userAccount.get());
+
+
+        // Preparar la respuesta
+        TransactionDTO transactionDTO = new TransactionDTO(payment);
+
+        return transactionDTO;
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //3- Depositar dinero en una Cuenta.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public TransactionDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO) {
 
         //Constructior del deposito
         Transaction deposito = Transaction.builder().build();
@@ -216,7 +255,6 @@ public class TransactionServiceImplementation implements TransactionService {
                     .findFirst();
         }
 
-
         if (transactionDepositDTO.getAmount() <= 0) {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_NEGATIVO);
         } else {
@@ -238,36 +276,10 @@ public class TransactionServiceImplementation implements TransactionService {
 
         Transaction transactionGuardada = transactionRepository.save(deposito);
 
-        TransactionCompletaDTO transactionCompletaDTO = new TransactionCompletaDTO(transactionGuardada);
+        TransactionDTO transactionDTO = new TransactionDTO(transactionGuardada);
 
-        return transactionCompletaDTO;
+        return transactionDTO;
 
-    }
-    //-----------------------------------------------------------------------------------------------------------
-
-    //3- Obtener el detalle de una transaccion buscandola por ID.
-    //-----------------------------------------------------------------------------------------------------------
-    @Override
-    public TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction) {
-
-        //Autenticamos el usuario
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-
-        //Buscamos una nueva transaction
-        Transaction transaction = transactionRepository.findById(idTransaction)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ERROR_NO_SE_ENCONTRO_ID_TRANSACTION));
-
-        String toUpperCaseRole = userSecurityDTO.getRole();
-
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
-
-            TransactionCompletaDTO transactionMostrar = new TransactionCompletaDTO(transaction);
-
-            return transactionMostrar;
-
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
-        }
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -323,43 +335,28 @@ public class TransactionServiceImplementation implements TransactionService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
+    //6- Obtener el detalle de una transaccion buscandola por ID.
+    //-----------------------------------------------------------------------------------------------------------
     @Override
-    @Transactional
-    public TransactionCompletaDTO makePayment(TransactionDepositDTO transactionDTO, HttpServletRequest request) {
+    public TransactionDTO transactionDetail(HttpServletRequest request, Long idTransaction) {
 
-        // Obtener el usuario desde el token
+        //Autenticamos el usuario
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        // Buscar la cuenta del usuario (considerando tipo de cuenta del DTO)
-        Optional<Account> userAccount = accountRepository.findByUserIdAndCurrency(userSecurityDTO.getId(), transactionDTO.getCurrencyType());
+        //Buscamos una nueva transaction
+        Transaction transaction = transactionRepository.findById(idTransaction)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ERROR_NO_SE_ENCONTRO_ID_TRANSACTION));
 
+        String toUpperCaseRole = userSecurityDTO.getRole();
 
-        // Verificar que haya suficiente saldo en la cuenta del usuario
-        if (userAccount.isEmpty()|| userAccount.get().getBalance() < transactionDTO.getAmount()||transactionDTO.getAmount()>userAccount.get().getTransactionLimit()) {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_EN_TRANSACCION);
+        //Si el usuario no es administrador y la transaccion no le pertenece...
+        if (!toUpperCaseRole.equals("ADMIN") && transaction.getAccount().getUser().getId()
+                != userSecurityDTO.getId()) {
+
+            throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.ERROR_TRANSACTION_NO_ENCONTRADA);
         }
 
-        // Registrar la transacción como payment
-        Transaction payment = Transaction.builder()
-                .amount(transactionDTO.getAmount())
-                .type(TransactionType.payment)
-                .description(transactionDTO.getDescription())
-                .transactionDate(LocalDateTime.now())
-                .account(userAccount.get())
-                .accountDestino(userAccount.get())// La cuenta del usuario
-                .build();
-
-        // Guardar la transacción
-        transactionRepository.save(payment);
-
-        // Actualizar el balance de la cuenta del usuario
-        userAccount.get().setBalance(userAccount.get().getBalance() - transactionDTO.getAmount());
-        accountRepository.save(userAccount.get());
-
-
-        // Preparar la respuesta
-        TransactionCompletaDTO transactionCompletaDTO = new TransactionCompletaDTO(payment);
-
-        return transactionCompletaDTO;
+        return new TransactionDTO(transaction);
     }
+    //-----------------------------------------------------------------------------------------------------------
 }

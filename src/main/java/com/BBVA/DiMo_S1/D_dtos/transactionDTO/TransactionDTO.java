@@ -21,19 +21,22 @@ public class TransactionDTO {
     private String description;
     private LocalDateTime transactionDate;
     private String cuenta;
+    private String titular;
     private String cuentaDestino;
 
     public TransactionDTO(Transaction transaction) {
-        this.currencyType = transaction.getAccount().getCurrency();
         this.amount = transaction.getAmount();
+        this.currencyType = transaction.getAccount().getCurrency();
         this.type = transaction.getType();
         this.description = transaction.getDescription();
         this.transactionDate = transaction.getTransactionDate();
         this.cuenta = transaction.getAccount().getCbu();
-        if (transaction.getType().equals(TransactionType.deposit)) {
-            this.cuentaDestino = null;
-        } else {
+        this.titular = (transaction.getAccount().getUser().getFirstName() + " "
+                + transaction.getAccount().getUser().getLastName());
+        if (transaction.getType().equals(TransactionType.payment) && transaction.getAccountDestino() != null) {
             this.cuentaDestino = transaction.getAccountDestino().getCbu();
+        } else {
+            this.cuentaDestino = null;
         }
     }
 }
