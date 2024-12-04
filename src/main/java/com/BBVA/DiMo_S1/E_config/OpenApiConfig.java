@@ -59,10 +59,11 @@ public class OpenApiConfig implements WebMvcConfigurer {
                         ))
                 .tags(List.of(
                         new Tag().name("A- Autenticación"),
-                        new Tag().name("B- Gestión de Cuentas"),
+                        new Tag().name("B- Cuentas"),
                         new Tag().name("C- Transacciones"),
                         new Tag().name("D- Plazos Fijos"),
-                        new Tag().name("E- Préstamos")
+                        new Tag().name("E- Préstamos"),
+                        new Tag().name("F- Usuarios")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(new Components().addSecuritySchemes("Bearer Authentication", securityScheme()));

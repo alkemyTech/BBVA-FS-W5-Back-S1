@@ -6,6 +6,8 @@ public class ErrorConstants {
 
     public static final String CONTRASEÑA_INVALIDA = "ERROR! La contraseña no es válida. Debe tener entre 6 y 20 caracteres.";
 
+    public static final String USER_SIN_CUENTAS = "ERROR! El usuario no tiene ninguna cuenta creada.";
+
     public static final String DELETE_NO_VALIDO = "ERROR! El User que deseas eliminar ya fue eliminado.";
 
     public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! El CBU no pertenece a una Account presente en el sistema.";

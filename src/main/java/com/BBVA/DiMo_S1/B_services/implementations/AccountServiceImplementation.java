@@ -54,7 +54,27 @@ public class AccountServiceImplementation implements AccountService {
     @Autowired
     private FixedTermDepositServiceImplementation fixedTermDepositServiceImplementation;
 
-    //1- Creacion de una Cuenta.
+    //1- Mostrar las cuentas pertenecientes al usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public List<AccountPageDTO> getAccounts(HttpServletRequest request) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Obtenemos la lista de cuentas pertenecientes al usuario.
+        List<Account> accountList = accountRepository.getByIdUser(userSecurityDTO.getId());
+
+        if (accountList.isEmpty()) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.USER_SIN_CUENTAS);
+        }
+
+        return accountList.stream().map(AccountPageDTO::new).collect(Collectors.toList());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //2- Creacion de una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public ShowCreatedAccountDTO createAccount(final long idUser, final CurrencyType currencyType) {
@@ -107,7 +127,7 @@ public class AccountServiceImplementation implements AccountService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Actualizar el limite de transacción de una Cuenta.
+    //3- Actualizar el limite de transacción de una Cuenta.
     //------------------------------------------------------------------------------------------------------------
     @Override
     public ShowUpdateAccountDTO updateAccount(HttpServletRequest request, UpdateAccountDTO updateAccountDTO,
@@ -149,7 +169,7 @@ public class AccountServiceImplementation implements AccountService {
     }
     //------------------------------------------------------------------------------------------------------------------
 
-    //3- Obtener balance de una Cuenta
+    //4- Obtener balance de una Cuenta
     //------------------------------------------------------------------------------------------------------------------
     @Override
     public BalanceDto obtainBalance(HttpServletRequest request) {
@@ -204,7 +224,55 @@ public class AccountServiceImplementation implements AccountService {
     }
     //------------------------------------------------------------------------------------------------------------------
 
-    //4- softDelete de una Cuenta.
+    //5- Mostrar las cuentas pertenecientes a un determinado usuario buscandolo por id.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public List<AccountPageDTO> getAccountsAdmin(HttpServletRequest request, Long idUser) {
+
+        //Obtenemos el usuario autenticado y el rol.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Validamos que el usuario autenticado sea administrador.
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+
+        //Buscamos al usuario que se quiere actualizar y lanzamos excepción si no existe.
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        List<Account> accountList = accountRepository.getByIdUser(user.getId());
+
+        if (accountList.isEmpty()) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.USER_SIN_CUENTAS);
+        }
+
+        return accountList.stream().map(AccountPageDTO::new).collect(Collectors.toList());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //6- Paginado de cuentas
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request) {
+
+        //Obtenemos el User logueado y el Role.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        String toUpperCaseRole = userSecurityDTO.getRole();
+
+        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
+
+            return accountRepository.findAll(pageable)
+                    .map(AccountPageDTO::new);
+        } else {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
+        }
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //7- softDelete de una Cuenta.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public void softDelete(final HttpServletRequest request, final long id) throws CustomException {
@@ -243,38 +311,11 @@ public class AccountServiceImplementation implements AccountService {
                     throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
                 }
             }
-
         } else {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO_ACCOUNT);
         }
     }
     //-----------------------------------------------------------------------------------------------------------
-
-    //5- Paginado de cuentas
-    //-----------------------------------------------------------------------------------------------------------
-    @Override
-    public Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request) {
-
-        //Obtenemos el User logueado y el Role.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-        String toUpperCaseRole = userSecurityDTO.getRole();
-
-        if (toUpperCaseRole.toUpperCase().equals("ADMIN")) {
-
-            return accountRepository.findAll(pageable)
-                    .map(AccountPageDTO::new);
-        } else {
-
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
-        }
-    }
-    //-----------------------------------------------------------------------------------------------------------
-
-    @Override
-    public Account getAccountByEmail(String email) {
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Cuenta no encontrada para el email: " + email));
-    }
 
     private String generateCBU() {
         Random rand = new Random();

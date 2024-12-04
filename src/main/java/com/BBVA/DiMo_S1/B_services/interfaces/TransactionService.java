@@ -1,11 +1,11 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
-import com.BBVA.DiMo_S1.D_dtos.transactionDTO.*;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionUpdateDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
-import java.util.Map;
 
 
 public interface TransactionService {
@@ -14,10 +14,10 @@ public interface TransactionService {
     TransactionDTO sendMoney(HttpServletRequest request, SimpleTransactionDTO simpleTransactionDTO);
 
     //2- Depositar dinero en una Cuenta.
-    TransactionCompletaDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO);
+    TransactionDTO deposit(HttpServletRequest request, TransactionDepositDTO transactionDepositDTO);
 
     //3- Obtener detalle de una Transaction buscandola por ID.
-    TransactionCompletaDTO transactionDetail(HttpServletRequest request, Long idTransaction);
+    TransactionDTO transactionDetail(HttpServletRequest request, Long idTransaction);
 
     //4- Actualizar la descripcion de una Transaction.
     TransactionDTO updateTransactionDescription(Long transactionId, TransactionUpdateDTO transactionUpdateDTO, HttpServletRequest request);
@@ -26,6 +26,6 @@ public interface TransactionService {
     Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page);
 
     //Obtener detalle de una transaction
-    TransactionCompletaDTO makePayment(TransactionDepositDTO transactionDTO, HttpServletRequest request);
+    TransactionDTO makePayment(TransactionDepositDTO transactionDTO, HttpServletRequest request);
 
 }

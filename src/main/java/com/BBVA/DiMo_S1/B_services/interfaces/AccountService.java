@@ -1,29 +1,33 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
 import com.BBVA.DiMo_S1.D_dtos.accountDTO.*;
-import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface AccountService {
 
     //1- Creación de una Cuenta.
     ShowCreatedAccountDTO createAccount(final long idUser, final CurrencyType currencyType);
 
-    //2- Obtener balance de una Cuenta.
+    //2- Mostrar las cuentas pertenecientes al usuario autenticado.
+    List<AccountPageDTO> getAccounts(HttpServletRequest request);
+
+    //3- Obtener balance de una Cuenta.
     BalanceDto obtainBalance(HttpServletRequest request);
 
-    //3- Actualizar Account del User.
+    //4- Actualizar Account del User.
     ShowUpdateAccountDTO updateAccount(HttpServletRequest request, UpdateAccountDTO updateAccountDTO, String cbu);
 
-    //4- softDelete de una Cuenta.
-    void softDelete(final HttpServletRequest request, final long idAccount);
+    //5- Mostrar las cuentas pertenecientes a un determinado usuario buscandolo por id.
+    List<AccountPageDTO> getAccountsAdmin(HttpServletRequest request, Long idUser);
 
-    //5- Paginado de Cuentas.
+    //6- Paginado de Cuentas.
     Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request);
 
-    Account getAccountByEmail(String email);
-
+    //7- softDelete de una Cuenta.
+    void softDelete(final HttpServletRequest request, final long idAccount);
 }
