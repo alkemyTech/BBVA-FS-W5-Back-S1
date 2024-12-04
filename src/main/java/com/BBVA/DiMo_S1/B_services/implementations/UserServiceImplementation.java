@@ -2,9 +2,7 @@ package com.BBVA.DiMo_S1.B_services.implementations;
 
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
-import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.accountDTO.AccountDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
@@ -25,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -38,98 +35,142 @@ public class UserServiceImplementation implements UserService {
     UserRepository userRepository;
 
     @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    RoleServiceImplementation roleServiceImplementation;
-
-    @Autowired
     JwtService jwtService;
 
-    //1- softDelete de un User de la BD.
+    //1- Actualizar datos de perfil como usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
     @Override
-    public void softDelete(HttpServletRequest request, long idUser) throws CustomException {
+    public UpdateUserDTO updateUser(HttpServletRequest request, UpdateUserDTO updateUserDTO) {
 
+        //Antes que nada, validamos el formato de la password
+        //Si tiene una longitud que no esta entre 6 y 20 caracteres...
+        if (updateUserDTO.getPassword().length() < 6 || updateUserDTO.getPassword().length() > 20) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.CONTRASEÑA_INVALIDA);
+        }
+
+        //Obtenemos el usuario autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        //Buscamos al User por ID. En caso de que no exista, lanzamos excepción.
-        User user = userRepository.findById(idUser)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+        //Buscamos al usuario.
+        Optional<User> user = userRepository.findById(userSecurityDTO.getId());
 
-        //En caso de que el User exista, no nos alzanza. Debemos verificar si el campo "soft_delete" == null.
-        if (user.getSoftDelete() == null) {
-
-            if (userSecurityDTO.getRole().equals("ADMIN")) {
-
-                //Aca debería utilizar el update del propio servicio. Por ahora, a modo de prueba, alcanza.
-                user.setSoftDelete(LocalDateTime.now());
-
-            } else {
-
-                if (idUser == userSecurityDTO.getId()) {
-
-                    user.setSoftDelete(LocalDateTime.now());
-
-                } else {
-
-                    throw new CustomException(HttpStatus.FORBIDDEN, ErrorConstants.OPERACION_SOLO_ADMIN);
-                }
-            }
-
-            userRepository.save(user);
-
-        } else {
-
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO);
-        }
-    }
-
-    @Override
-    public User findById(Long id) {
-        return userRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    public Page<FullUserDto> getAll(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(FullUserDto::new);
-    }
-
-    @Override
-    public List<AccountDTO> listarCuentasPorUsuario(long userId) throws CustomException {
-        List<Account> listaCuentas = accountRepository.getByIdUser(userId);
-
-        if (listaCuentas.isEmpty()) {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO);
-        } else {
-            return listaCuentas.stream().map(
-                    AccountDTO::new
-            ).collect(Collectors.toList());
-        }
-    }
-
-    public UserDTO userDetail(Long idUser) {
-
-        User user = userRepository.findById(idUser).orElseThrow(
-                () -> new CustomException(
-                        HttpStatus.CONFLICT, ErrorConstants.ERROR_ID_USUARIO_NO_ENCONTRADO));
-
-        return new UserDTO(user);
-    }
-
-    @Override
-    public UpdateUserDTO updateUser(HttpServletRequest request, Long idUser, UpdateUserDTO updateUserDTO) {
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-        Optional<User> user = userRepository.findById(idUser);
-
-        if (user.isEmpty()) {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.USER_NO_ENCONTRADO);
-        }
+        //Actualizamos sus datos.
         user.get().setFirstName(updateUserDTO.getFirstName());
         user.get().setLastName(updateUserDTO.getLastName());
         String passHash = BCrypt.hashpw(updateUserDTO.getPassword(), BCrypt.gensalt());
         user.get().setPassword(passHash);
-        User user1 = userRepository.save(user.get());
+        userRepository.save(user.get());
+
         return updateUserDTO;
     }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //2- Actualizar datos de perfil como usuario administrador.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public UpdateUserDTO updateUserAdmin(HttpServletRequest request, Long idUser, UpdateUserDTO updateUserDTO) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Validamos que el usuario autenticado sea administrador.
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+
+        //Buscamos al usuario que se quiere actualizar y lanzamos excepción si no existe.
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        //Actualizamos sus datos.
+        user.setFirstName(updateUserDTO.getFirstName());
+        user.setLastName(updateUserDTO.getLastName());
+        String passHash = BCrypt.hashpw(updateUserDTO.getPassword(), BCrypt.gensalt());
+        user.setPassword(passHash);
+        userRepository.save(user);
+
+        return updateUserDTO;
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //3- Listar los usuarios presentes en el sistema.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public Page<FullUserDto> getAll(Pageable pageable, HttpServletRequest request) {
+
+        //Obtenemos el usuario autenticado y el rol.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Validamos que el usuario autenticado sea administrador.
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+
+        return userRepository.findAll(pageable)
+                .map(FullUserDto::new);
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //4- Obtener datos de perfil como usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public UserDTO userDetail(HttpServletRequest request) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        Optional<User> user = userRepository.findById(userSecurityDTO.getId());
+
+        return new UserDTO(user.get());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //5- Obtener datos de perfil de un determinado usuario como administrador.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public UserDTO userDetailAdmin(HttpServletRequest request, Long idUser) {
+
+        //Obtenemos el usuario autenticado y el rol.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Validamos que el usuario autenticado sea administrador.
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+
+        //Buscamos al usuario que se quiere actualizar y lanzamos excepción si no existe.
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        return new UserDTO((user));
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //6- Baja de un usuario del sistema.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public void softDelete(HttpServletRequest request) throws CustomException {
+
+        //Obtenemos el usuario autenticado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Buscamos al User por ID. En caso de que no exista, lanzamos excepción.
+        Optional<User> user = userRepository.findById(userSecurityDTO.getId());
+
+        //Damos de baja al usuario.
+        user.get().setSoftDelete(LocalDateTime.now());
+
+        //Damos de baja sus cuentas.
+        List<Account> accountList = accountRepository.getByIdUser(userSecurityDTO.getId());
+        for (Account account : accountList) {
+
+            account.setSoftDelete(LocalDateTime.now());
+
+            accountRepository.save(account);
+        }
+        
+        //Guardamos nuevamente al usuario.
+        userRepository.save(user.get());
+    }
+    //-----------------------------------------------------------------------------------------------------------
 }

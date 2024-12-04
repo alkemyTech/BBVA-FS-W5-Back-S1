@@ -167,33 +167,19 @@ public class TransactionController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //7- Ver el detalle de una transaccion buscandola por ID como usuario administrador.
-    //-----------------------------------------------------------------------------------------------------------
-    @Operation(summary = "Ver detalle de una transacción", description = "Endpoint para poder ver detalle de una transacción. " +
-            "El endpoint permite al usuario autenticado con rol administrador ver el detalle de una transacción buscandola por ID." +
-            "\n\nConsideraciones:" +
-            "\n- El usuario autenticado debe ser administrador." +
-            "\n- El ID de transacción enviado debe coincidir con una transacción presente en el sistema."
-    )
-    @GetMapping("admin/detail/{idTransaction}")
-    public ResponseEntity<TransactionDTO> obtainTransactionDetailUser(HttpServletRequest request, @PathVariable Long idTransaction) {
-        TransactionDTO transactionDetalle = transactionServiceImplementation.transactionDetail(request, idTransaction);
-        return ResponseEntity.ok(transactionDetalle);
-    }
-    //-----------------------------------------------------------------------------------------------------------
-
-
-    //8- Ver el detalle de una transaccion buscandola por ID como usuario administrador.
+    //7- Ver el detalle de una transaccion buscandola por ID.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Ver detalle de una transacción", description = "Endpoint para poder ver detalle de una transacción. " +
             "El endpoint permite al usuario autenticado ver el detalle de una transacción buscandola por ID." +
             "\n\nConsideraciones:" +
-            "\n- El ID de transacción enviado debe coincicir con una transacción perteneciente a su cuenta."
+            "\n- El endpoint puede ser accesible tanto por un usuario con rol de USER como por un usuario con rol de ADMIN. " +
+            "La diferencia entre ambos va a estar en que, en el caso del adminstrador, va a poder ver todas las transacciones " +
+            "que busque y que estén dentro del sistema, le pertenezcan o no. Por el contrario, en el caso del usuario con rol USER, " +
+            "solo va a poder ver aquellas transacciones que, obviamente esten dentro del sistema y además, que le pertenezcan."
     )
     @GetMapping("detail/{idTransaction}")
     public ResponseEntity<TransactionDTO> obtainTransactionDetailAdmin(HttpServletRequest request, @PathVariable Long idTransaction) {
-        TransactionDTO transactionDetalle = transactionServiceImplementation.transactionDetail(request, idTransaction);
-        return ResponseEntity.ok(transactionDetalle);
+        return ResponseEntity.ok(transactionServiceImplementation.transactionDetail(request, idTransaction));
     }
     //-----------------------------------------------------------------------------------------------------------
 }
