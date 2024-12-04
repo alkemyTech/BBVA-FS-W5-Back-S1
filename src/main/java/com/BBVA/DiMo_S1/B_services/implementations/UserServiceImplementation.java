@@ -149,7 +149,7 @@ public class UserServiceImplementation implements UserService {
     //6- Baja de un usuario del sistema.
     //-----------------------------------------------------------------------------------------------------------
     @Override
-    public void softDelete(HttpServletRequest request) throws CustomException {
+    public void softDeleteByUser(HttpServletRequest request) throws CustomException {
 
         //Obtenemos el usuario autenticado
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
@@ -163,14 +163,45 @@ public class UserServiceImplementation implements UserService {
         //Damos de baja sus cuentas.
         List<Account> accountList = accountRepository.getByIdUser(userSecurityDTO.getId());
         for (Account account : accountList) {
-
             account.setSoftDelete(LocalDateTime.now());
-
             accountRepository.save(account);
         }
-        
+
         //Guardamos nuevamente al usuario.
         userRepository.save(user.get());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //7- Dar de baja del sistema a un usuario con rol de administrador.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public void softDeleteByAdmin(HttpServletRequest request, Long idUser) throws CustomException {
+
+        //Obtenemos el usuario autenticado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Verificamos si el usuario es ADMIN
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+
+        //Buscamos al User por ID. Debe no haber sido eliminado de la BD.
+        User user = userRepository.findByIdAndSoftDeleteIsNull(userSecurityDTO.getId())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO_O_ELIMINADO));
+
+        //Damos de baja al usuario.
+        user.setSoftDelete(LocalDateTime.now());
+
+        //Damos de baja sus cuentas.
+        List<Account> accountList = accountRepository.getByIdUser(userSecurityDTO.getId());
+        for (Account account : accountList) {
+            account.setSoftDelete(LocalDateTime.now());
+            accountRepository.save(account);
+        }
+
+        //Guardamos nuevamente al usuario.
+        userRepository.save(user);
     }
     //-----------------------------------------------------------------------------------------------------------
 }

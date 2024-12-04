@@ -25,6 +25,9 @@ public interface UserService {
     UserDTO userDetailAdmin(HttpServletRequest request, Long idUser);
 
     //6- Baja de un usuario del sistema.
-    void softDelete(HttpServletRequest request);
+    void softDeleteByUser(HttpServletRequest request);
+
+    //7- Dar de baja del sistema a un usuario con rol de administrador.
+    void softDeleteByAdmin(HttpServletRequest request, Long idUser);
 
 }

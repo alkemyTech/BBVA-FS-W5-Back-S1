@@ -272,51 +272,6 @@ public class AccountServiceImplementation implements AccountService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //7- softDelete de una Cuenta.
-    //-----------------------------------------------------------------------------------------------------------
-    @Override
-    public void softDelete(final HttpServletRequest request, final long id) throws CustomException {
-
-        //Obtenemos el User autenticado
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-
-        //Buscamos la Account por ID. En caso de que no exista, lanzamos excepción.
-        Account account = accountRepository.findById(userSecurityDTO.getId())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA));
-
-        //En caso de que la Account exista...
-        //Verificamos que dicha cuenta no haya sido eliminada
-        if (account.getSoftDelete() == null) {
-
-            //Si la cuenta no fue eliminada...
-            //Si es ADMIN, puede eliminar cualquier cuenta.
-            if (userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
-
-                //Seteamos la fecha y lo guardamos nuevamente.
-                account.setSoftDelete(LocalDateTime.now());
-                accountRepository.save(account);
-
-            } else {
-
-                //Por el contrario, si es USER...
-                //Solo puede eliminar una cuenta que sea suya.
-                if (account.getUser().getId() == userSecurityDTO.getId()) {
-
-                    //Seteamos la fecha y lo guardamos nuevamente.
-                    account.setSoftDelete(LocalDateTime.now());
-                    accountRepository.save(account);
-
-                } else {
-
-                    throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.SIN_PERMISO);
-                }
-            }
-        } else {
-            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.DELETE_NO_VALIDO_ACCOUNT);
-        }
-    }
-    //-----------------------------------------------------------------------------------------------------------
-
     private String generateCBU() {
         Random rand = new Random();
         // Generar código de banco de 3 dígitos (por ejemplo, Banco Nación: 001)
