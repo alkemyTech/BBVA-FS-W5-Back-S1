@@ -9,7 +9,7 @@ public class MocksTransaction {
     */
     public static SimpleTransactionDTO mockSimpleTransactionDTO(){
         SimpleTransactionDTO simpleTransactionDTO = SimpleTransactionDTO.builder().build();
-        simpleTransactionDTO.setAmount(10000);
+        simpleTransactionDTO.setAmount(10000d);
         simpleTransactionDTO.setCBU("52059060623642715578");
         simpleTransactionDTO.setDescription("Pago servicio");
         return simpleTransactionDTO;
