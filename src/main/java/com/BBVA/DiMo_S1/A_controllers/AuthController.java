@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +36,8 @@ public class AuthController {
             "\n- El formato del mail debe ser de la siguiente manera: (A-Z)@(A-Z).com" +
             "\n- La contraseña debe tener entre 6 y 20 caracteres.")
     @PostMapping("/register")
-    public ShowCreatedUserDTO registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
-        return ResponseEntity.ok(authServiceImplementation.createUser(createUserDTO)).getBody();
+    public ResponseEntity<ShowCreatedUserDTO> registerUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authServiceImplementation.createUser(createUserDTO));
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -48,9 +49,9 @@ public class AuthController {
             "\n\nConsideraciones:" +
             "\n\n- El usuario debe estar previamente registrado y las credenciales deben ser válidas.")
     @PostMapping("/login")
-    public ShowCreatedUserDTO login(@RequestBody LoginUserDTO loginUserDTO) {
-        return ResponseEntity.ok(authServiceImplementation.login(loginUserDTO.getEmail(),
-                loginUserDTO.getPassword())).getBody();
+    public ResponseEntity<ShowCreatedUserDTO> login(@RequestBody LoginUserDTO loginUserDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authServiceImplementation.login(loginUserDTO.getEmail(),
+                loginUserDTO.getPassword()));
     }
     //-----------------------------------------------------------------------------------------------------------
 
