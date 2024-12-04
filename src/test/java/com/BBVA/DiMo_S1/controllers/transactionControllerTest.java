@@ -50,7 +50,7 @@ public class transactionControllerTest {
         //Configurar el comportamiento del mock(usamos el servicio del controller)
         when(transactionServiceImplementation.sendMoney(httpServletRequest,simpleTransactionDTO)).thenReturn(transactionDTO);
         //Llamar al metodo del controlador
-        ResponseEntity<TransactionDTO> response = transactionController.sendUsd(simpleTransactionDTO,httpServletRequest);
+        ResponseEntity<TransactionDTO> response = transactionController.sendArs(simpleTransactionDTO,httpServletRequest);
         // Verificar el resultado
         assertNotNull(response);
         assertEquals(HttpStatusCode.valueOf(201),response.getStatusCode());
