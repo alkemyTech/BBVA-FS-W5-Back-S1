@@ -1,6 +1,6 @@
 package com.BBVA.DiMo_S1.D_dtos.userDTO;
 
-import com.BBVA.DiMo_S1.D_models.Role;
+
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
