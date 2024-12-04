@@ -2,7 +2,6 @@ package com.BBVA.DiMo_S1.services;
 
 import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.LoginUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.ShowCreatedUserDTO;
 import com.BBVA.DiMo_S1.D_models.Role;
@@ -19,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
