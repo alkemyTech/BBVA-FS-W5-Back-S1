@@ -115,17 +115,38 @@ public class UserController {
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Darse de baja del sistema", description = "Endpoint para darse de baja del sistema. " +
             "El endpoint permite al usuario autenticado darse de baja del sistema y desactivar sus cuentas." +
-            "de un usuario buscandolo por ID." +
             "\n\nConsideraciones:" +
             "\n- Una vez dado de baja, el usuario no podrá iniciar sesión nuevamente" +
-            "\n- Para poder regresar al sistema, debe activar su cuenta nuevamente."
+            "\n- Para poder regresar al sistema, debe activar su cuenta nuevamente." +
+            "\n- Sus cuentas, quedarán inhabilitadas. Las mismas no podrán recibir dinero de otra cuenta."
     )
-    @DeleteMapping("/{idUser}")
-    public ResponseEntity<String> softDelete(HttpServletRequest request) {
+    @DeleteMapping()
+    public ResponseEntity<String> softDeleteByUser(HttpServletRequest request) {
 
-        userServiceImplementation.softDelete(request);
+        userServiceImplementation.softDeleteByUser(request);
 
         return ResponseEntity.ok().body("Fuiste dado de baja con éxito!");
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //7- Dar de baja del sistema a un usuario con rol de administrador.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Dar de baja del sistema a un usuario", description = "Endpoint para dar de baja del sistema " +
+            "a un usuario. El endpoint permite al usuario autenticado con rol de administrador dar de baja a un usuario " +
+            "presente en el sistema y desactivar sus cuentas." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario autenticado debe ser administrador" +
+            "\n- Si el usuario ya fue dado de baja, no se va a poder eliminarlo nuevamente" +
+            "\n- Una vez dado de baja, el usuario no podrá iniciar sesión nuevamente" +
+            "\n- Para poder regresar al sistema, debe activar su cuenta nuevamente." +
+            "\n- Sus cuentas, quedarán inhabilitadas. Las mismas no podrán recibir dinero de otra cuenta."
+    )
+    @DeleteMapping("admin/{idUser}")
+    public ResponseEntity<String> softDeleteByAdmin(HttpServletRequest request, @PathVariable Long idUser) {
+
+        userServiceImplementation.softDeleteByAdmin(request, idUser);
+
+        return ResponseEntity.ok().body("El usuario con ID = " + idUser + " fue dado de baja con éxito!");
     }
     //-----------------------------------------------------------------------------------------------------------
 }

@@ -28,6 +28,4 @@ public interface AccountService {
     //6- Paginado de Cuentas.
     Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request);
 
-    //7- softDelete de una Cuenta.
-    void softDelete(final HttpServletRequest request, final long idAccount);
 }
