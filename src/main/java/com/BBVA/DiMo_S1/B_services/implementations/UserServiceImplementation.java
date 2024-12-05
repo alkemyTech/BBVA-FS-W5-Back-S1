@@ -52,14 +52,17 @@ public class UserServiceImplementation implements UserService {
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         //Buscamos al usuario.
-        Optional<User> user = userRepository.findById(userSecurityDTO.getId());
-
+        Optional<User> userOptional = userRepository.findById(userSecurityDTO.getId());
+        if (userOptional.isEmpty()) {
+            throw new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO);
+        }
+        User user = userOptional.get();
         //Actualizamos sus datos.
-        user.get().setFirstName(updateUserDTO.getFirstName());
-        user.get().setLastName(updateUserDTO.getLastName());
+        userOptional.get().setFirstName(updateUserDTO.getFirstName());
+        userOptional.get().setLastName(updateUserDTO.getLastName());
         String passHash = BCrypt.hashpw(updateUserDTO.getPassword(), BCrypt.gensalt());
-        user.get().setPassword(passHash);
-        userRepository.save(user.get());
+        userOptional.get().setPassword(passHash);
+        userRepository.save(userOptional.get());
 
         return updateUserDTO;
     }
