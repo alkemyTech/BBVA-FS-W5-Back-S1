@@ -78,4 +78,5 @@ public class ErrorConstants {
 
     public static final String TIPO_ACCOUNT_NO_ENCONTRADO = "ERROR! No existe la cuenta indicada para realizar el pago.";
 
+    public static final String TOKEN_INVALIDO = "ERROR! El token ingresado es invalido";
 }
