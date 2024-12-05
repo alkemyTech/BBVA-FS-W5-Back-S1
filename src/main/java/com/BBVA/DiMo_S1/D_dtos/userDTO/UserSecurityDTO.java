@@ -2,14 +2,13 @@ package com.BBVA.DiMo_S1.D_dtos.userDTO;
 
 
 import io.jsonwebtoken.Claims;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
