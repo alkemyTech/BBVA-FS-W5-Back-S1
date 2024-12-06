@@ -3,6 +3,7 @@ package com.BBVA.DiMo_S1.controllers;
 import com.BBVA.DiMo_S1.A_controllers.UserController;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
+import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,19 +18,21 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 public class UserControllerTest {
+
     @InjectMocks
     private UserController userController;
 
     @Mock
     private UserServiceImplementation userServiceImplementation;
 
-    private HttpServletRequest mockRequest;
+    @Mock
+    private JwtService jwtService;
 
     private AutoCloseable autoCloseable;
 
@@ -45,20 +48,24 @@ public class UserControllerTest {
 
     @Test
     void userUpdate_success() {
-        // Datos de prueba
+
+        //Datos de prueba
         UpdateUserDTO updateUserDTO = new UpdateUserDTO();
         updateUserDTO.setFirstName("UpdatedName");
         updateUserDTO.setLastName("UpdatedLastName");
         updateUserDTO.setPassword("ValidPassword");
 
-        // Configuración de mock
-        Mockito.when(userServiceImplementation.updateUser(any(HttpServletRequest.class), eq(updateUserDTO)))
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader("Authorization", "Bearer mockToken");
+
+        //Configuración de mock
+        Mockito.when(userServiceImplementation.updateUser(any(HttpServletRequest.class), any(UpdateUserDTO.class)))
                 .thenReturn(updateUserDTO);
 
-        // Ejecución
+        //Ejecución
         ResponseEntity<UpdateUserDTO> response = userController.userUpdate(mockRequest, updateUserDTO);
 
-        // Verificaciones
+        //Verificaciones
         Assertions.assertNotNull(response);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals("UpdatedName", response.getBody().getFirstName());
@@ -67,17 +74,21 @@ public class UserControllerTest {
 
     @Test
     void userUpdate_userNotFound_throwsException() {
-        // Datos de prueba
+
+        //Datos de prueba
         UpdateUserDTO updateUserDTO = new UpdateUserDTO();
         updateUserDTO.setFirstName("UpdatedName");
         updateUserDTO.setLastName("UpdatedLastName");
         updateUserDTO.setPassword("ValidPassword");
 
-        // Configuración de mock
-        Mockito.when(userServiceImplementation.updateUser(any(HttpServletRequest.class), eq(updateUserDTO)))
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader("Authorization", "Bearer mockToken");
+
+        //Configuración de mock
+        Mockito.when(userServiceImplementation.updateUser(any(HttpServletRequest.class), any(UpdateUserDTO.class)))
                 .thenThrow(new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
 
-        // Ejecución y verificación
+        //Ejecución y verificación
         CustomException exception = Assertions.assertThrows(CustomException.class, () ->
                 userController.userUpdate(mockRequest, updateUserDTO));
 
@@ -87,17 +98,21 @@ public class UserControllerTest {
 
     @Test
     void userUpdate_invalidPassword_throwsException() {
-        // Datos de prueba
+
+        //Datos de prueba
         UpdateUserDTO updateUserDTO = new UpdateUserDTO();
         updateUserDTO.setFirstName("UpdatedName");
         updateUserDTO.setLastName("UpdatedLastName");
-        updateUserDTO.setPassword("short"); // Contraseña no válida
+        updateUserDTO.setPassword("123");
 
-        // Configuración de mock
-        Mockito.when(userServiceImplementation.updateUser(any(HttpServletRequest.class), eq(updateUserDTO)))
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader("Authorization", "Bearer mockToken");
+
+        //Configuración de mock
+        Mockito.when(userServiceImplementation.updateUser(any(HttpServletRequest.class), any(UpdateUserDTO.class)))
                 .thenThrow(new CustomException(HttpStatus.CONFLICT, ErrorConstants.CONTRASEÑA_INVALIDA));
 
-        // Ejecución y verificación
+        //Ejecución y verificación
         CustomException exception = Assertions.assertThrows(CustomException.class, () ->
                 userController.userUpdate(mockRequest, updateUserDTO));
 
