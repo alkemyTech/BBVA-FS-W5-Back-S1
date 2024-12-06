@@ -37,6 +37,9 @@ public class UserServiceImplementation implements UserService {
     @Autowired
     JwtService jwtService;
 
+    @Autowired
+    AccountServiceImplementation accountServiceImplementation;
+
     //1- Actualizar datos de perfil como usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Override

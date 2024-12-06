@@ -7,6 +7,7 @@ import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
+import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 @Tag(name = "F- Usuarios")
 public class UserController {
 
@@ -45,7 +46,7 @@ public class UserController {
     )
     @PatchMapping("/update")
     public ResponseEntity<UpdateUserDTO> userUpdate(HttpServletRequest request, @RequestBody UpdateUserDTO
-            createUserDTO) {
+            createUserDTO) throws CustomException {
         return ResponseEntity.ok(userServiceImplementation.updateUser(request, createUserDTO));
     }
     //-----------------------------------------------------------------------------------------------------------
