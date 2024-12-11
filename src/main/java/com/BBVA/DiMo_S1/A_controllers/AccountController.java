@@ -20,7 +20,7 @@ import java.util.List;
 
 @Validated
 @RestController
-@RequestMapping("accounts")
+@RequestMapping("/accounts")
 @Tag(name = "B- Cuentas")
 public class AccountController {
 

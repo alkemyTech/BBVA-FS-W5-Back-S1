@@ -17,11 +17,11 @@ public class SimpleTransactionDTO {
     private String description;
     private String CBU;
 
-    public  SimpleTransactionDTO (Transaction transaction) {
+    public SimpleTransactionDTO(Transaction transaction) {
 
         this.amount = transaction.getAmount();
 
-        this.description= transaction.getDescription();
+        this.description = transaction.getDescription();
 
         this.CBU = transaction.getAccount().getCbu();
     }

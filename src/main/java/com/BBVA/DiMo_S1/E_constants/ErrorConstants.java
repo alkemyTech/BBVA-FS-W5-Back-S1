@@ -79,4 +79,8 @@ public class ErrorConstants {
     public static final String TIPO_ACCOUNT_NO_ENCONTRADO = "ERROR! No existe la cuenta indicada para realizar el pago.";
 
     public static final String TOKEN_INVALIDO = "ERROR! El token ingresado es invalido";
+
+    public static final String ERROR_USER_PROPIO_A_FAVORITOS = "ERROR! No podes agregarte a vos mismo a la lista de favoritos.";
+
+    public static final String ERROR_USER_YA_AGREGADO = "ERROR! El usuario que deseas agregar ya existe en tu lista de favoritos.";
 }

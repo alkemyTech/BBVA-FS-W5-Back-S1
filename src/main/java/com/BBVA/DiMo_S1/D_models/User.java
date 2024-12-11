@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Builder
 @Data
@@ -59,4 +60,7 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<User> favoritos;
 }
