@@ -7,27 +7,35 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Set;
+
 public interface UserService {
 
-    //1- Actualizar datos de perfil como usuario autenticado.
+    //1- Agregar a un usuario a la lista de usuarios favoritos.
+    UserDTO addUserToFavList(HttpServletRequest request, Long idUser);
+
+    //2- Actualizar datos de perfil como usuario autenticado.
     UpdateUserDTO updateUser(HttpServletRequest request, UpdateUserDTO updateUserDTO);
 
-    //2- Actualizar datos de perfil de un determinado usuario como administrador.
+    //3- Actualizar datos de perfil de un determinado usuario como administrador.
     UpdateUserDTO updateUserAdmin(HttpServletRequest request, Long idUser, UpdateUserDTO updateUserDTO);
 
-    //3- Obtener datos de perfil como usuario autenticado.
+    //4- Obtener datos de perfil como usuario autenticado.
     UserDTO userDetail(HttpServletRequest request);
 
-    //4- Paginar usuarios presentes en el sistema.
+    //5- Mostrar lista de favoritos del usuario autenticado.
+    Set<UserDTO> showFavList(HttpServletRequest request);
+
+    //6- Paginar usuarios presentes en el sistema.
     Page<FullUserDto> getAll(Pageable pageable, HttpServletRequest request);
 
-    //5- Obtener datos de perfil de un determinado usuario como adminstrador.
+    //7- Obtener datos de perfil de un determinado usuario como adminstrador.
     UserDTO userDetailAdmin(HttpServletRequest request, Long idUser);
 
-    //6- Baja de un usuario del sistema.
+    //8- Baja de un usuario del sistema.
     void softDeleteByUser(HttpServletRequest request);
 
-    //7- Dar de baja del sistema a un usuario con rol de administrador.
+    //9- Dar de baja del sistema a un usuario con rol de administrador.
     void softDeleteByAdmin(HttpServletRequest request, Long idUser);
 
 }

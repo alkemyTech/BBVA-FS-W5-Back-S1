@@ -1,7 +1,5 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
-import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
-import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
@@ -18,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @Validated
 @RestController
 @RequestMapping("/users")
@@ -28,15 +28,24 @@ public class UserController {
     UserServiceImplementation userServiceImplementation;
 
     @Autowired
-    AccountServiceImplementation accountServiceImplementation;
-
-    @Autowired
-    AuthServiceImplementation authServiceImplementation;
-
-    @Autowired
     JwtService jwtService;
 
-    //1- Actualizar datos de perfil como usuario autenticado.
+    //1- Agregar a un usuario a la lista de usuarios favoritos.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Agregar a un usuario a lista de usuarios favoritos", description = "Endpoint para agregar a un " +
+            "usuario a la lista de usuarios favoritos. El endpoint permite al usuario autenticado agregar a un usuario " +
+            "a su lista de usuarios favoritos buscandolo por ID." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario que se desee agregar en la lista debe estar presente en el sistema"
+    )
+    @PostMapping("favList/{idUser}")
+    public ResponseEntity<UserDTO> addUserToFavList(HttpServletRequest request, @PathVariable Long idUser) {
+
+        return ResponseEntity.ok(userServiceImplementation.addUserToFavList(request, idUser));
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //2- Actualizar datos de perfil como usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Actualizar datos del perfil", description = "Endpoint para actualizar los datos del perfil. " +
             "El endpoint permite al usuario autenticado actualizar los datos de su perfil." +
@@ -51,7 +60,7 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Actualizar datos de perfil como usuario administrador.
+    //3- Actualizar datos de perfil como usuario administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Actualizar datos del perfil", description = "Endpoint para actualizar los datos del perfil. " +
             "El endpoint permite al usuario autenticado con rol de administrador actualizar los datos del perfil de un " +
@@ -69,7 +78,7 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //3- Obtener datos de perfil como usuario autenticado.
+    //4- Obtener datos de perfil como usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Obtener datos de perfil", description = "Endpoint para obtener los datos del perfil. " +
             "El endpoint permite al usuario autenticado obtener los datos de su perfil."
@@ -80,7 +89,20 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //4- Listar los usuarios presentes en el sistema.
+    //5- Mostrar lista de favoritos del usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Mostrar lista de usuarios favoritos", description = "Endpoint para mostrar la lista de usuarios " +
+            "favoritos del usuario autenticado. El endpoint permite al usuario autenticado mostrar la lista de sus usuarios " +
+            "favoritos."
+    )
+    @GetMapping("favList")
+    public ResponseEntity<Set<UserDTO>> showFavList(HttpServletRequest request) {
+
+        return ResponseEntity.ok(userServiceImplementation.showFavList(request));
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //6- Listar los usuarios presentes en el sistema.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Obtener usuarios", description = "Endpoint para obtener los usuarios presentes en el sistema. " +
             "El endpoint permite al usuario autenticado con rol de administrador obtener los usuarios presentes en el sistema." +
@@ -97,7 +119,7 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //5- Obtener datos de perfil de un determinado usuario como adminstrador.
+    //7- Obtener datos de perfil de un determinado usuario como adminstrador.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Obtener datos de perfil", description = "Endpoint para obtener los datos del perfil. " +
             "El endpoint permite al usuario autenticado con rol de administrador obtener los datos del perfil " +
@@ -112,7 +134,7 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //6- Darse de baja del sistema como usuario.
+    //8- Darse de baja del sistema como usuario.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Darse de baja del sistema", description = "Endpoint para darse de baja del sistema. " +
             "El endpoint permite al usuario autenticado darse de baja del sistema y desactivar sus cuentas." +
@@ -130,7 +152,7 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //7- Dar de baja del sistema a un usuario con rol de administrador.
+    //9- Dar de baja del sistema a un usuario con rol de administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Dar de baja del sistema a un usuario", description = "Endpoint para dar de baja del sistema " +
             "a un usuario. El endpoint permite al usuario autenticado con rol de administrador dar de baja a un usuario " +

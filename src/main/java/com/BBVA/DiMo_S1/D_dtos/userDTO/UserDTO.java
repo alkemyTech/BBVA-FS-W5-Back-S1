@@ -21,6 +21,5 @@ public class UserDTO {
         this.lastName = user.getLastName();
         this.email = user.getEmail();
         this.creationDate = user.getCreationDate();
-
     }
 }

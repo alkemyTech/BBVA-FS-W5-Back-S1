@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("loan")
+@RequestMapping("/loan")
 @Tag(name = "E- Préstamos")
 public class LoanController {
 
