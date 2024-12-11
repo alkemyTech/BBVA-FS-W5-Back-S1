@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -40,7 +42,46 @@ public class UserServiceImplementation implements UserService {
     @Autowired
     AccountServiceImplementation accountServiceImplementation;
 
-    //1- Actualizar datos de perfil como usuario autenticado.
+    //1- Agregar a un usuario a la lista de usuarios favoritos.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public UserDTO addUserToFavList(HttpServletRequest request, Long idUser) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Buscamos al usuario por ID. Si no existe, lanzamos excepción.
+        User userBuscado = userRepository.findById(idUser)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        //Si existe...
+        User userAutenticado = userRepository.getById(userSecurityDTO.getId());
+
+        //Verificamos que el usuario que se desea agregar no haya sido ya agregado a la lista de favoritos.
+        for (User userExistente : userAutenticado.getFavoritos()) {
+
+            if (userExistente.getId() == userBuscado.getId()) {
+
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_USER_YA_AGREGADO);
+            }
+        }
+
+        //Verificamos tambien que el User autenticado no se pueda agregar a si mismo a la lista de favoritos.
+        if (userBuscado.getId() != userAutenticado.getId()) {
+
+            userAutenticado.getFavoritos().add(userBuscado);
+            userRepository.save(userBuscado);
+
+        } else {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_USER_PROPIO_A_FAVORITOS);
+        }
+
+        return new UserDTO(userBuscado);
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //2- Actualizar datos de perfil como usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public UpdateUserDTO updateUser(HttpServletRequest request, UpdateUserDTO updateUserDTO) {
@@ -71,7 +112,7 @@ public class UserServiceImplementation implements UserService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Actualizar datos de perfil como usuario administrador.
+    //3- Actualizar datos de perfil como usuario administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public UpdateUserDTO updateUserAdmin(HttpServletRequest request, Long idUser, UpdateUserDTO updateUserDTO) {
@@ -99,7 +140,37 @@ public class UserServiceImplementation implements UserService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //3- Listar los usuarios presentes en el sistema.
+    //4- Obtener datos de perfil como usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public UserDTO userDetail(HttpServletRequest request) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        Optional<User> user = userRepository.findById(userSecurityDTO.getId());
+
+        return new UserDTO(user.get());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //5- Mostrar lista de favoritos del usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public Set<UserDTO> showFavList(HttpServletRequest request) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        User userAutenticado = userRepository.getById(userSecurityDTO.getId());
+
+        return userAutenticado.getFavoritos().stream()
+                .map(user -> new UserDTO(user))
+                .collect(Collectors.toSet());
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //6- Listar los usuarios presentes en el sistema.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public Page<FullUserDto> getAll(Pageable pageable, HttpServletRequest request) {
@@ -117,21 +188,7 @@ public class UserServiceImplementation implements UserService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //4- Obtener datos de perfil como usuario autenticado.
-    //-----------------------------------------------------------------------------------------------------------
-    @Override
-    public UserDTO userDetail(HttpServletRequest request) {
-
-        //Obtenemos el usuario autenticado.
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
-
-        Optional<User> user = userRepository.findById(userSecurityDTO.getId());
-
-        return new UserDTO(user.get());
-    }
-    //-----------------------------------------------------------------------------------------------------------
-
-    //5- Obtener datos de perfil de un determinado usuario como administrador.
+    //7- Obtener datos de perfil de un determinado usuario como administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public UserDTO userDetailAdmin(HttpServletRequest request, Long idUser) {
@@ -152,7 +209,7 @@ public class UserServiceImplementation implements UserService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //6- Baja de un usuario del sistema.
+    //8- Baja de un usuario del sistema.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public void softDeleteByUser(HttpServletRequest request) throws CustomException {
@@ -178,7 +235,7 @@ public class UserServiceImplementation implements UserService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //7- Dar de baja del sistema a un usuario con rol de administrador.
+    //9- Dar de baja del sistema a un usuario con rol de administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Override
     public void softDeleteByAdmin(HttpServletRequest request, Long idUser) throws CustomException {
