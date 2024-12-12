@@ -62,9 +62,6 @@ public class AccountServiceImplTest {
     private TransactionRepository transactionRepository;
 
     @Mock
-    private AccountServiceImplementation accountServiceImplementation;
-
-    @Mock
     private JwtService jwtService;
 
     private HttpServletRequest mockRequest;
