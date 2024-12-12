@@ -12,7 +12,7 @@ import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
-import com.BBVA.DiMo_S1.Mocks.MocksUserAuth;
+import com.BBVA.DiMo_S1.mocks.MocksUserAuth;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

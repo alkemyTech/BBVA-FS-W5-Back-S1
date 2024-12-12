@@ -1,4 +1,4 @@
-package com.BBVA.DiMo_S1.Mocks;
+package com.BBVA.DiMo_S1.mocks;
 
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.LoginUserDTO;

@@ -5,7 +5,7 @@ import com.BBVA.DiMo_S1.B_services.implementations.AuthServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.CreateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.LoginUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.ShowCreatedUserDTO;
-import com.BBVA.DiMo_S1.Mocks.MocksUserAuth;
+import com.BBVA.DiMo_S1.mocks.MocksUserAuth;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,22 +1,29 @@
 package com.BBVA.DiMo_S1.services;
 
+import com.BBVA.DiMo_S1.B_services.implementations.AccountServiceImplementation;
 import com.BBVA.DiMo_S1.B_services.implementations.TransactionServiceImplementation;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.SimpleTransactionDTO;
 import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDTO;
+import com.BBVA.DiMo_S1.D_dtos.transactionDTO.TransactionDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.Transaction;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.Enums.CurrencyType;
+import com.BBVA.DiMo_S1.E_constants.Enums.TransactionType;
+import com.BBVA.DiMo_S1.mocks.Mocks;
+import com.BBVA.DiMo_S1.mocks.MocksUserAuth;
 import jakarta.servlet.http.HttpServletRequest;
+import net.bytebuddy.dynamic.DynamicType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -36,6 +43,9 @@ public class TransactionServiceImplTest {
 
     @Mock
     private TransactionRepository transactionRepository;
+
+    @Mock
+    private AccountServiceImplementation accountServiceImplementation;
 
     @Mock
     private JwtService jwtService;
@@ -102,5 +112,48 @@ public class TransactionServiceImplTest {
         // Verificar el resultado
         assertNotNull(response);
         assertEquals(simpleTransactionDTO.getAmount(), response.getAmount());
+    }
+
+    @Test
+    void testDepositSuccess() {
+        System.out.println("PRUEBA DEPOSITO");
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        TransactionDepositDTO transactionDepositDTO = new TransactionDepositDTO();
+        transactionDepositDTO.setAmount(100.0);
+        transactionDepositDTO.setCurrencyType(CurrencyType.USD);
+        transactionDepositDTO.setDescription("Depósito de prueba");
+
+        UserSecurityDTO userSecurityDTO = new UserSecurityDTO();
+        userSecurityDTO.setId(1L);
+        when(jwtService.validateAndGetSecurity(anyString())).thenReturn(userSecurityDTO);
+        when(jwtService.extractToken(request)).thenReturn("token");
+
+        List<Account> listAccounts = new ArrayList<>();
+        Account account = new Account();
+        account.setCurrency(CurrencyType.USD);
+        account.setBalance(900.0);
+        account.setTransactionLimit(1000.0);
+        User user = new User();
+        user.setId(1L);
+        account.setUser(user);
+        listAccounts.add(account);
+        when(accountRepository.getByIdUser(userSecurityDTO.getId())).thenReturn(listAccounts);
+        when(request.getRequestURI()).thenReturn("transactions/deposit");
+
+        // Mock para guardar la cuenta y la transacción
+        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Llamar al método del servicio
+        TransactionDTO response = transactionServiceImplementation.deposit(request, transactionDepositDTO);
+
+        // Verificar el resultado
+        assertNotNull(response);
+        assertEquals(transactionDepositDTO.getAmount(), response.getAmount());
+        assertEquals(TransactionType.deposit, response.getType());
+
+        System.out.println(response);
+
+
     }
 }
