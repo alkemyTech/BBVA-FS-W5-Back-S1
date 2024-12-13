@@ -28,4 +28,7 @@ public interface AccountService {
     //6- Paginado de Cuentas.
     Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request);
 
+    //7- Buscar cuenta por cbu
+    public AccountDTO obetenerPorCbu(String cbu);
+
 }

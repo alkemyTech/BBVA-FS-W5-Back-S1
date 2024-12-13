@@ -119,4 +119,12 @@ public class AccountController {
         return ResponseEntity.ok(accountServiceImplementation.getAll(PageRequest.of(page, size), request));
     }
     //-----------------------------------------------------------------------------------------------------------
+    //7- Obtener el una cuenta por cbu.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Obtener una cuenta por CBU", description = "Endpoint para una Cuenta por CBU. " +
+            "El endpoint permite al usuario autenticado obtener una cuenta por cbu ")
+    @GetMapping("/{cbu}")
+    public ResponseEntity<AccountDTO> obtainByCbu(@PathVariable String cbu) {
+        return ResponseEntity.ok().body(accountServiceImplementation.obetenerPorCbu(cbu));
+    }
 }
