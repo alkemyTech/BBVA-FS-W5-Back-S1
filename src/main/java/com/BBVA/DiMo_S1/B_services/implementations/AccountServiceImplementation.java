@@ -272,6 +272,28 @@ public class AccountServiceImplementation implements AccountService {
     }
     //-----------------------------------------------------------------------------------------------------------
 
+    @Override
+    public AccountDTO obetenerPorCbu(String cbu){
+        Account cuentaBuscada = null;
+        List<Account> listaCuentas = accountRepository.findAll();
+
+        for( Account cuenta: listaCuentas){
+            if(cuenta.getCbu().equals(cbu)){
+                cuentaBuscada = cuenta;
+            }
+        }
+
+        if(cuentaBuscada == null) {
+            throw new CustomException(HttpStatus.CONFLICT, "ERROR! El CBU ingresasdo no existe");
+        } else {
+            AccountDTO cuentaADevolver = new AccountDTO(cuentaBuscada);
+            return cuentaADevolver;
+        }
+
+    }
+
+    //-----------------------------------------------------------------------------------------------------------
+
     private String generateCBU() {
         Random rand = new Random();
         // Generar código de banco de 3 dígitos (por ejemplo, Banco Nación: 001)
