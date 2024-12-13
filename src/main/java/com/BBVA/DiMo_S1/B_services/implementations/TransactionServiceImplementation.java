@@ -323,8 +323,8 @@ public class TransactionServiceImplementation implements TransactionService {
     //5- Obtener listado de transacciones mediante ID de usuario.
     //-----------------------------------------------------------------------------------------------------------
     @Override
-    public Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page) {
-        Pageable pageable = PageRequest.of(page, 10); // 10 elementos por página
+    public Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
         Page<Transaction> transactionPage = transactionRepository.getTransactionsByIdUserPageable(id, pageable);
 
         if (transactionPage.isEmpty()) {
