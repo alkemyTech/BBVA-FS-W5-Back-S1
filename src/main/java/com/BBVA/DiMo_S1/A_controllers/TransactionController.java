@@ -128,13 +128,13 @@ public class TransactionController {
     @GetMapping
     public ResponseEntity<Page<TransactionDTO>> getAllTransactionsUser(
             HttpServletRequest request,
-            @RequestParam(defaultValue = "0") int page
-    ) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
         // Validar el token y obtener información del usuario loggeado
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         // Llamar al servicio para obtener las transacciones del usuario loggeado
-        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(userSecurityDTO.getId(), page);
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(userSecurityDTO.getId(), page, size);  // Ajuste aquí
 
         return ResponseEntity.ok(transactionPage);
     }
@@ -152,7 +152,8 @@ public class TransactionController {
     public ResponseEntity<Page<TransactionDTO>> getAllTransactionsAdmin(
             HttpServletRequest request,
             @PathVariable Long idUser,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         // Validar si el usuario tiene rol de administrador
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
@@ -161,7 +162,7 @@ public class TransactionController {
         }
 
         // Llamar al servicio para obtener las transacciones del usuario especificado
-        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(idUser, page);
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(idUser, page,  size);
 
         return ResponseEntity.ok(transactionPage);
     }
