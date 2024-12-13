@@ -764,6 +764,28 @@ Endpoint para simular un Préstamo. El endpoint permite al usuario autenticado s
 
 ------------
 
+🟢	**POST** -- **`/users/favList/{idUser}`** 
+  
+Endpoint para agregar a un usuario a la lista de usuarios favoritos. El endpoint permite al usuario autenticado agregar a un usuario a su lista de usuarios favoritos buscandolo por ID.
+
+**Consideraciones**:
+
+- El usuario que se desee agregar en la lista debe estar presente en el sistema.
+
+**Formato de entrada y salida**:
+
+- Entrada: *El ID de usuario que se desea agregar en la lista*
+
+- Salida:
+
+   ```json
+  {
+   "firstName": "Juan",
+   "lastName": "Sanchez",
+   "email": "juanSanchez@gmail.com",
+   "creationDate": "2024-12-11T12:53:00.905Z"
+  }
+
 🟣	**PATCH** -- **`/users/update`** 
   
 Endpoint para actualizar los datos del perfil. El endpoint permite al usuario autenticado actualizar los datos de su perfil.
@@ -851,6 +873,14 @@ Endpoint para obtener los datos del perfil. El endpoint permite al usuario auten
     "email": "juanSanchez@example.com",
     "creationDate": "2024-12-04T11:04:48.587Z"
    }
+
+🔵 **GET** -- **`/users/favList`** 
+  
+Endpoint para mostrar la lista de usuarios favoritos del usuario autenticado. El endpoint permite al usuario autenticado mostrar la lista de sus usuarios favoritos.
+
+**Formato de salida**:
+
+- Salida:
 
 🔵 **GET** -- **`/users/admin`** 
   

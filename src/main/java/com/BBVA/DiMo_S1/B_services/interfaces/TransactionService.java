@@ -23,7 +23,7 @@ public interface TransactionService {
     TransactionDTO updateTransactionDescription(Long transactionId, TransactionUpdateDTO transactionUpdateDTO, HttpServletRequest request);
 
     //5- Listar todas las transacciones de un usuario buscandolo por ID.
-    Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page);
+    Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page, int size);
 
     //Obtener detalle de una transaction
     TransactionDTO makePayment(TransactionDepositDTO transactionDTO, HttpServletRequest request);
