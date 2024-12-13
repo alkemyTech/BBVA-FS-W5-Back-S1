@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @EnableScheduling
 @Service
@@ -143,7 +142,7 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
     @Scheduled(fixedRate = 60000)
     public void liquidarPlazosFijos() {
         //Obtenemos la lista de Plazos Fijos de la BD
-        List<FixedTermDeposit> plazosFijos = fixedTermDepositRepository.findAll();
+        List<FixedTermDeposit> plazosFijos = fixedTermDepositRepository.getFixedTermDepositsWithAccounts();
 
         for (FixedTermDeposit fixedTermDeposit : plazosFijos) {
 
@@ -160,12 +159,7 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
                 //Una vez que liquidamos el Plazo Fijo, debemos actualizar el balance de la cuenta y realizar
                 //un deposito.
                 //----------------------------------------------------------------------------------------------
-
                 double gananciaPlazoFijo = calcularPlazoFijo(fixedTermDeposit);
-
-                //Obtengo la cuenta por id.
-                Optional<Account> account = accountRepository.getArsAccountByIdUser
-                        (fixedTermDeposit.getAccount().getId());
 
                 //Genero una Transaction del tipo Deposit para que el User se de cuenta de que se le depositó el
                 //Plazo Fijo en su cuenta.
@@ -177,9 +171,9 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
                 transactionRepository.save(depositoPlazoFijo);
 
                 //Actualizo el balance de la cuenta y la guardo de nuevo en la bd.
-                double balanceActualizado = account.get().getBalance() + gananciaPlazoFijo;
-                account.get().setBalance(balanceActualizado);
-                accountRepository.save(account.get());
+                double balanceActualizado = fixedTermDeposit.getAccount().getBalance() + gananciaPlazoFijo;
+                fixedTermDeposit.getAccount().setBalance(balanceActualizado);
+                accountRepository.save(fixedTermDeposit.getAccount());
             }
             //----------------------------------------------------------------------------------------------
         }

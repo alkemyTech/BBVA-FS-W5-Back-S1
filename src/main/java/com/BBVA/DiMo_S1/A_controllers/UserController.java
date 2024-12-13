@@ -95,7 +95,7 @@ public class UserController {
             "favoritos del usuario autenticado. El endpoint permite al usuario autenticado mostrar la lista de sus usuarios " +
             "favoritos."
     )
-    @GetMapping("favList")
+    @GetMapping("/favList")
     public ResponseEntity<Set<UserDTO>> showFavList(HttpServletRequest request) {
 
         return ResponseEntity.ok(userServiceImplementation.showFavList(request));
