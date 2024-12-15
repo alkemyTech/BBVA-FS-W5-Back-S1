@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 
 public class FixedTermDepositDTO {
+    private long id;
     private double amount;
     private String interest;
     private LocalDateTime creationDate;
@@ -21,6 +22,7 @@ public class FixedTermDepositDTO {
     private boolean settled;
 
     public FixedTermDepositDTO(FixedTermDeposit fixedTermDeposit) {
+        this.id = fixedTermDeposit.getId();
         this.amount = fixedTermDeposit.getAmount();
         this.interest = "2%";
         this.creationDate = fixedTermDeposit.getCreationDate();

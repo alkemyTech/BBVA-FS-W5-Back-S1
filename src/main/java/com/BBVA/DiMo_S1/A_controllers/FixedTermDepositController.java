@@ -2,18 +2,19 @@ package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.FixedTermDepositServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.CreateFixedTermDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.ShowSimulatedFixedTermDeposit;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
+import com.BBVA.DiMo_S1.E_config.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/fixedTerm")
@@ -22,6 +23,9 @@ public class FixedTermDepositController {
 
     @Autowired
     FixedTermDepositServiceImplementation fixedTermDepositServiceImplementation;
+
+    @Autowired
+    JwtService jwtService;
 
     //1- Creación de un Plazo Fijo.
     //-----------------------------------------------------------------------------------------------------
@@ -60,6 +64,27 @@ public class FixedTermDepositController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(fixedTermDepositServiceImplementation.
                 createFixedTermDeposit(request, createFixedTermDepositDTO));
+    }
+    //-----------------------------------------------------------------------------------------------------
+
+    //3- Listar Plazos Fijos pertenecientes al usuario.
+    //-----------------------------------------------------------------------------------------------------
+    @Operation(summary = "Obtener listado de Plazos Fijos", description = "Endpoint para obtener listado de Plazos Fijos. " +
+            "El endpoint permite al usuario autenticado obtener el listado de sus Plazos Fijos creados. Los mismos, pueden " +
+            "ser paginadas."
+    )
+    @GetMapping
+    public ResponseEntity<Page<FixedTermDepositDTO>> getAllFixedTermDepositFromUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<FixedTermDepositDTO> fixedTermDepositPage = fixedTermDepositServiceImplementation.getAllFixedTermDepositFromUser
+                (userSecurityDTO.getId(), page, size);  // Ajuste aquí
+        return ResponseEntity.ok(fixedTermDepositPage);
     }
     //-----------------------------------------------------------------------------------------------------
 }

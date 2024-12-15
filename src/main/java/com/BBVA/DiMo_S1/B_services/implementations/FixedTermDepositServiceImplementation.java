@@ -5,6 +5,7 @@ import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.FixedTermDepositRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.CreateFixedTermDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.ShowSimulatedFixedTermDeposit;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
@@ -16,6 +17,9 @@ import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -209,6 +213,16 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
         valorFinal = valorFinal + (fixedTermDeposit.getAmount() + ganancia);
 
         return valorFinal;
+    }
+    //-----------------------------------------------------------------------------------------------------------------
+
+    //3- Listar Plazos Fijos pertenecientes al usuario.
+    //-----------------------------------------------------------------------------------------------------------------
+    public Page<FixedTermDepositDTO> getAllFixedTermDepositFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<FixedTermDeposit> fixedTermDepositPage = fixedTermDepositRepository.
+                getFixedTermsDepositsByIdUserPageable(id, pageable);
+        return fixedTermDepositPage.map(FixedTermDepositDTO::new);
     }
     //-----------------------------------------------------------------------------------------------------------------
 }
