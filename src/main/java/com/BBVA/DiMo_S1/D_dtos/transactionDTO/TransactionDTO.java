@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
+    private Long id;
     private Double amount;
     private CurrencyType currencyType;
     private TransactionType type;
@@ -25,6 +26,7 @@ public class TransactionDTO {
     private String cuentaDestino;
 
     public TransactionDTO(Transaction transaction) {
+        this.id = transaction.getId();
         this.amount = transaction.getAmount();
         this.currencyType = transaction.getAccount().getCurrency();
         this.type = transaction.getType();
