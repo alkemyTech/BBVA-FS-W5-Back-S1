@@ -333,6 +333,76 @@ public class TransactionServiceImplementation implements TransactionService {
 
         return transactionPage.map(TransactionDTO::new);
     }
+
+    @Override
+    public Page<TransactionDTO> getAllDepositFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<Transaction> transactionPage = transactionRepository.getDepositsByUserId(id, pageable);
+
+        if (transactionPage.isEmpty()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        return transactionPage.map(TransactionDTO::new);
+    }
+
+    @Override
+    public Page<TransactionDTO> getAllPaymentFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<Transaction> transactionPage = transactionRepository.getPaymentByUserId(id, pageable);
+
+        if (transactionPage.isEmpty()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        return transactionPage.map(TransactionDTO::new);
+    }
+
+    @Override
+    public Page<TransactionDTO> getAllTransactionArsFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<Transaction> transactionPage = transactionRepository.getTransactionsArsByUserId(id, pageable);
+
+        if (transactionPage.isEmpty()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        return transactionPage.map(TransactionDTO::new);
+    }
+
+    public Page<TransactionDTO> getAllTransactionUsdFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<Transaction> transactionPage = transactionRepository.getTransactionsUsdByUserId(id, pageable);
+
+        if (transactionPage.isEmpty()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        return transactionPage.map(TransactionDTO::new);
+    }
+
+    public Page<TransactionDTO> getAllTransactionsOrderAmountDescFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<Transaction> transactionPage = transactionRepository.getTransactionsOrderMoneyByIdUserPageable(id, pageable);
+
+        if (transactionPage.isEmpty()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        return transactionPage.map(TransactionDTO::new);
+    }
+
+    public Page<TransactionDTO> getAllTransactionsOrderAmountAscFromUser(Long id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // 10 elementos por página
+        Page<Transaction> transactionPage = transactionRepository.getTransactionsOrderMoneyAscByIdUserPageable(id, pageable);
+
+        if (transactionPage.isEmpty()) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_TRANSACTION_NOT_EXIST);
+        }
+
+        return transactionPage.map(TransactionDTO::new);
+    }
+
     //-----------------------------------------------------------------------------------------------------------
 
     //6- Obtener el detalle de una transaccion buscandola por ID.

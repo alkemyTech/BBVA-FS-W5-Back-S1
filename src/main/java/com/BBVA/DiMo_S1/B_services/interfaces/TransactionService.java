@@ -25,6 +25,18 @@ public interface TransactionService {
     //5- Listar todas las transacciones de un usuario buscandolo por ID.
     Page<TransactionDTO> getAllTransactionsFromUser(Long id, int page, int size);
 
+    Page<TransactionDTO> getAllDepositFromUser(Long id, int page, int size);
+
+    Page<TransactionDTO> getAllPaymentFromUser(Long id, int page, int size);
+
+    Page<TransactionDTO> getAllTransactionArsFromUser(Long id, int page, int size);
+
+    Page<TransactionDTO> getAllTransactionUsdFromUser(Long id, int page, int size);
+
+    Page<TransactionDTO> getAllTransactionsOrderAmountDescFromUser(Long id, int page, int size);
+
+    Page<TransactionDTO> getAllTransactionsOrderAmountAscFromUser(Long id, int page, int size);
+
     //Obtener detalle de una transaction
     TransactionDTO makePayment(TransactionDepositDTO transactionDTO, HttpServletRequest request);
 
