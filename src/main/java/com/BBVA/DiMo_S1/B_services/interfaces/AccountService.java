@@ -29,6 +29,5 @@ public interface AccountService {
     Page<AccountPageDTO> getAll(Pageable pageable, HttpServletRequest request);
 
     //7- Buscar cuenta por cbu
-    public AccountDTO obetenerPorCbu(String cbu);
-
+    AccountDTO obetenerPorCbu(String cbu);
 }
