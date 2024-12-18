@@ -3,10 +3,7 @@ package com.BBVA.DiMo_S1.B_services.implementations;
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.*;
 import com.BBVA.DiMo_S1.D_models.Account;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
@@ -15,6 +12,7 @@ import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -45,14 +42,14 @@ public class UserServiceImplementation implements UserService {
     //1- Agregar a un usuario a la lista de usuarios favoritos.
     //-----------------------------------------------------------------------------------------------------------
     @Override
-    public UserDTO addUserToFavList(HttpServletRequest request, Long idUser) {
+    public FavUserDTO addUserToFavList(HttpServletRequest request, String email) {
 
         //Obtenemos el usuario autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        //Buscamos al usuario por ID. Si no existe, lanzamos excepción.
-        User userBuscado = userRepository.findById(idUser)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+        //Buscamos al usuario por mail. Si no existe, lanzamos excepción.
+        User userBuscado = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USUARIO_NO_ENCONTRADO));
 
         //Si existe...
         User userAutenticado = userRepository.getById(userSecurityDTO.getId());
@@ -77,7 +74,10 @@ public class UserServiceImplementation implements UserService {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_USER_PROPIO_A_FAVORITOS);
         }
 
-        return new UserDTO(userBuscado);
+        //Antes de terminar, buscamos las cuentas del usuario.
+        List<Account> cuentas = accountRepository.getByIdUser(userBuscado.getId());
+
+        return new FavUserDTO(userBuscado, cuentas);
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -157,16 +157,22 @@ public class UserServiceImplementation implements UserService {
     //5- Mostrar lista de favoritos del usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Override
-    public Set<UserDTO> showFavList(HttpServletRequest request) {
+    public Page<FavUserDTO> showFavList(HttpServletRequest request, Pageable pageable) {
 
-        //Obtenemos el usuario autenticado.
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
-        User userAutenticado = userRepository.getById(userSecurityDTO.getId());
+        Page<User> favUsersPage = userRepository.findFavUsers(userSecurityDTO.getId(), pageable);
 
-        return userAutenticado.getFavoritos().stream()
-                .map(user -> new UserDTO(user))
-                .collect(Collectors.toSet());
+        List<FavUserDTO> dtoList = favUsersPage.stream()
+                .map(user -> {
+                    // Obtener las cuentas del usuario actual
+                    List<Account> cuentas = accountRepository.getByIdUser(user.getId());
+                    // Crear el DTO combinando el usuario y sus cuentas
+                    return new FavUserDTO(user, cuentas);
+                })
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, favUsersPage.getTotalElements());
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -265,6 +271,41 @@ public class UserServiceImplementation implements UserService {
 
         //Guardamos nuevamente al usuario.
         userRepository.save(user);
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //Obtener a un Usuario por email
+    //-----------------------------------------------------------------------------------------------------------
+    @Override
+    public FavUserDTO getUserByEmail(HttpServletRequest request, String email) {
+
+        //Obtenemos el usuario autenticado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+        User userAutenticado = userRepository.getById(userSecurityDTO.getId());
+
+        //Buscamos al usuario por email.
+        User userBuscado = userRepository.findByEmailAndSoftDeleteIsNull(email)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USUARIO_NO_ENCONTRADO));
+
+        //Verificamos que el usuario que se desea agregar no haya sido ya agregado a la lista de favoritos.
+        for (User userExistente : userAutenticado.getFavoritos()) {
+
+            if (userExistente.getId() == userBuscado.getId()) {
+
+                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_USER_YA_AGREGADO);
+            }
+        }
+
+        //Verificamos tambien que el User autenticado no se pueda agregar a si mismo a la lista de favoritos.
+        if (userBuscado.getId() == userAutenticado.getId()) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_USER_PROPIO_A_FAVORITOS);
+        }
+
+        //Si no hay problemas, buscamos las cuentas del usuario
+        List<Account> cuentas = accountRepository.getByIdUser(userBuscado.getId());
+
+        return new FavUserDTO(userBuscado, cuentas);
     }
     //-----------------------------------------------------------------------------------------------------------
 }

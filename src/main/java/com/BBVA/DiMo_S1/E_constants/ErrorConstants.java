@@ -83,4 +83,6 @@ public class ErrorConstants {
     public static final String ERROR_USER_PROPIO_A_FAVORITOS = "ERROR! No podes agregarte a vos mismo a la lista de favoritos.";
 
     public static final String ERROR_USER_YA_AGREGADO = "ERROR! El usuario que deseas agregar ya existe en tu lista de favoritos.";
+
+    public static final String USUARIO_NO_ENCONTRADO = "ERROR! El email ingresado no corresponde con ningún usuario presente en el sistema.";
 }

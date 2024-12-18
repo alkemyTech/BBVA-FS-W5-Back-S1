@@ -94,7 +94,7 @@ public class AuthServiceImplementation implements AuthService {
         //Verificamos si las creedenciales son validas...
         try {
 
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email.toLowerCase(), password));
 
         } catch (Exception e) {
 
