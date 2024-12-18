@@ -21,4 +21,8 @@ public interface FixedTermDepositRepository extends JpaRepository<FixedTermDepos
 
     @Query("SELECT ftd FROM FixedTermDeposit ftd JOIN FETCH ftd.account ac JOIN FETCH ac.user u WHERE u.id = :idUser")
     Page<FixedTermDeposit> getFixedTermsDepositsByIdUserPageable(@Param("idUser") long idUser, Pageable pageable);
+
+    @Query("SELECT SUM(ftd.amount) AS totalInvertido, SUM(ftd.amount * ftd.interest) AS totalInteres " +
+            "FROM FixedTermDeposit ftd JOIN ftd.account ac JOIN ac.user u WHERE u.id = :idUser")
+    List<Object[]> getTotalInvestedAndInterestByUserId(@Param("idUser") long idUser);
 }
