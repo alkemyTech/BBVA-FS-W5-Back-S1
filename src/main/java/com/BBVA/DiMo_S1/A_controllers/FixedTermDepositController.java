@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/fixedTerm")
 @Tag(name = "D- Plazos Fijos")
@@ -87,4 +89,15 @@ public class FixedTermDepositController {
         return ResponseEntity.ok(fixedTermDepositPage);
     }
     //-----------------------------------------------------------------------------------------------------
+
+    @GetMapping("/totals")
+    public ResponseEntity<Map<String, Double>> getTotalCalculations(HttpServletRequest request) {
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para calcular los totales
+        Map<String, Double> totals = fixedTermDepositServiceImplementation.getTotalCalculationsFromUser(userSecurityDTO.getId());
+
+        return ResponseEntity.ok(totals);
+    }
 }

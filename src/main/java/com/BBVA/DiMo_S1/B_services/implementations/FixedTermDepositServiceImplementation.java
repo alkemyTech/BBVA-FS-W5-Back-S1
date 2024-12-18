@@ -27,7 +27,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @EnableScheduling
 @Service
@@ -225,4 +227,32 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
         return fixedTermDepositPage.map(FixedTermDepositDTO::new);
     }
     //-----------------------------------------------------------------------------------------------------------------
+
+    //- Total de monto invertido, interes ganado y la suma de ambos.
+    @Override
+    public Map<String, Double> getTotalCalculationsFromUser(Long userId) {
+
+        List<Object[]> results = fixedTermDepositRepository.getTotalInvestedAndInterestByUserId(userId);
+
+        // Inicializar los valores
+        Double totalInvertido = 0.0;
+        Double totalInteres = 0.0;
+
+        if (!results.isEmpty() && results.get(0) != null) {
+            Object[] row = results.get(0);
+            totalInvertido = row[0] != null ? ((Number) row[0]).doubleValue() : 0.0;
+            totalInteres = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+        }
+
+        // Calcular el total general
+        Double totalGeneral = totalInvertido + totalInteres;
+
+        // Armar el mapa con los resultados
+        Map<String, Double> totals = new HashMap<>();
+        totals.put("totalInvertido", totalInvertido);
+        totals.put("totalInteres", totalInteres);
+        totals.put("totalGeneral", totalGeneral);
+
+        return totals;
+    }
 }
