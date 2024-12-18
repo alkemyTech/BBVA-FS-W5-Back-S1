@@ -6,6 +6,8 @@ import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.ShowSimulatedFixedTermDeposit
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 
+import java.util.Map;
+
 public interface FixedTermDepositService {
 
     //1- Creación de un Plazo Fijo.
@@ -16,4 +18,6 @@ public interface FixedTermDepositService {
 
     //3- Listar Plazos Fijos pertenecientes al usuario.
     Page<FixedTermDepositDTO> getAllFixedTermDepositFromUser(Long id, int page, int size);
+
+    Map<String, Double> getTotalCalculationsFromUser(Long userId);
 }
