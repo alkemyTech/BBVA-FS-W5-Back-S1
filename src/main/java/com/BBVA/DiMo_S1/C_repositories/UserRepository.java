@@ -25,5 +25,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.id = :idUser AND u.softDelete IS NULL")
     Optional<User> findByIdAndSoftDeleteIsNull(@Param("idUser") long idUser);
 
+    @Query(value = "SELECT u.* FROM users u JOIN users_favoritos uf ON u.id = uf.favoritos_id WHERE uf.user_id = :idUser",
+            countQuery = "SELECT COUNT(*) FROM users u JOIN users_favoritos uf on u.id = uf.favoritos_id WHERE uf.user_id" +
+                    " = :idUser", nativeQuery = true)
+    Page<User> findFavUsers(@Param("idUser") long idUser, Pageable pageable);
+
     Page<User> findAll(Pageable pageable);
 }

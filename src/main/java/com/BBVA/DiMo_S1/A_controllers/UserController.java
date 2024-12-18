@@ -1,6 +1,7 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.FavUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
@@ -15,8 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
 
 @Validated
 @RestController
@@ -38,10 +37,10 @@ public class UserController {
             "\n\nConsideraciones:" +
             "\n- El usuario que se desee agregar en la lista debe estar presente en el sistema"
     )
-    @PostMapping("favList/{idUser}")
-    public ResponseEntity<UserDTO> addUserToFavList(HttpServletRequest request, @PathVariable Long idUser) {
+    @PostMapping("favList/{email}")
+    public ResponseEntity<FavUserDTO> addUserToFavList(HttpServletRequest request, @PathVariable String email) {
 
-        return ResponseEntity.ok(userServiceImplementation.addUserToFavList(request, idUser));
+        return ResponseEntity.ok(userServiceImplementation.addUserToFavList(request, email));
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -96,9 +95,10 @@ public class UserController {
             "favoritos."
     )
     @GetMapping("/favList")
-    public ResponseEntity<Set<UserDTO>> showFavList(HttpServletRequest request) {
-
-        return ResponseEntity.ok(userServiceImplementation.showFavList(request));
+    public ResponseEntity<Page<FavUserDTO>> showFavList(HttpServletRequest request,
+                                                        @RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(userServiceImplementation.showFavList(request, PageRequest.of(page, size)));
     }
     //-----------------------------------------------------------------------------------------------------------
 
@@ -170,6 +170,15 @@ public class UserController {
         userServiceImplementation.softDeleteByAdmin(request, idUser);
 
         return ResponseEntity.ok().body("El usuario con ID = " + idUser + " fue dado de baja con éxito!");
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //Obtener a un Usuario por email
+    //-----------------------------------------------------------------------------------------------------------
+    @GetMapping("/favUser/{email}")
+    public ResponseEntity<FavUserDTO> getUserByEmail(HttpServletRequest request, @PathVariable String email) {
+
+        return ResponseEntity.ok(userServiceImplementation.getUserByEmail(request, email));
     }
     //-----------------------------------------------------------------------------------------------------------
 }
