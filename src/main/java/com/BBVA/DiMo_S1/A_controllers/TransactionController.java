@@ -134,13 +134,55 @@ public class TransactionController {
         UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
 
         // Llamar al servicio para obtener las transacciones del usuario loggeado
-        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(userSecurityDTO.getId(), page, size);  // Ajuste aquí
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsFromUser(userSecurityDTO.getId(), page, size);
 
         return ResponseEntity.ok(transactionPage);
     }
+
+    //7- Obtener listado de transacciones para usuario autenticado.
+    //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Obtener listado de depositos", description = "Endpoint para obtener listado de depositos. " +
+            "El endpoint permite al usuario autenticado obtener el listado de sus depositos realizados. Los mismos, pueden " +
+            "ser paginados." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario debe tener transacciones presentes."
+    )
+    @GetMapping("/deposits")
+    public ResponseEntity<Page<TransactionDTO>> getAllDepositsUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllDepositFromUser(userSecurityDTO.getId(), page, size);
+
+        return ResponseEntity.ok(transactionPage);
+    }
+    @Operation(summary = "Obtener listado de pagos", description = "Endpoint para obtener listado de pagos. " +
+            "El endpoint permite al usuario autenticado obtener el listado de sus pagos realizados. Los mismos, pueden " +
+            "ser paginados." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario debe tener transacciones presentes."
+    )
+    @GetMapping("/payments")
+    public ResponseEntity<Page<TransactionDTO>> getAllPaymentsUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllPaymentFromUser(userSecurityDTO.getId(), page, size);
+
+        return ResponseEntity.ok(transactionPage);
+    }
+
     //-----------------------------------------------------------------------------------------------------------
 
-    //7- Obtener listado de transacciones como usuario autenticado con rol administrador.
+    //8- Obtener listado de transacciones como usuario autenticado con rol administrador.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Obtener listado de transacciones como administrador", description = "Endpoint para obtener listado de transacciones. " +
             "El endpoint permite al usuario administrador obtener el listado de transacciones realizadas pertenecientes a un determinado usuario buscado por ID." +
@@ -168,7 +210,7 @@ public class TransactionController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //7- Ver el detalle de una transaccion buscandola por ID.
+    //9- Ver el detalle de una transaccion buscandola por ID.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Ver detalle de una transacción", description = "Endpoint para poder ver detalle de una transacción. " +
             "El endpoint permite al usuario autenticado ver el detalle de una transacción buscandola por ID." +
@@ -183,4 +225,66 @@ public class TransactionController {
         return ResponseEntity.ok(transactionServiceImplementation.transactionDetail(request, idTransaction));
     }
     //-----------------------------------------------------------------------------------------------------------
+    @Operation(summary = "Obtener listado de pagos", description = "Endpoint para obtener listado de pagos. " +
+            "El endpoint permite al usuario autenticado obtener el listado de sus pagos realizados. Los mismos, pueden " +
+            "ser paginados." +
+            "\n\nConsideraciones:" +
+            "\n- El usuario debe tener transacciones presentes."
+    )
+    @GetMapping("/ARS")
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionArsUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionArsFromUser(userSecurityDTO.getId(), page, size);
+
+        return ResponseEntity.ok(transactionPage);
+    }
+
+    @GetMapping("/USD")
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionUsdUser(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionUsdFromUser(userSecurityDTO.getId(), page, size);
+
+        return ResponseEntity.ok(transactionPage);
+    }
+
+    @GetMapping("/OrderByAmountDesc")
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionOrderByAmountDesc(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsOrderAmountDescFromUser(userSecurityDTO.getId(), page, size);
+
+        return ResponseEntity.ok(transactionPage);
+    }
+
+    @GetMapping("/OrderByAmountAsc")
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactionOrderByAmountAsc(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {  // Ajuste aquí
+        // Validar el token y obtener información del usuario loggeado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        // Llamar al servicio para obtener las transacciones del usuario loggeado
+        Page<TransactionDTO> transactionPage = transactionService.getAllTransactionsOrderAmountAscFromUser(userSecurityDTO.getId(), page, size);
+
+        return ResponseEntity.ok(transactionPage);
+    }
+
 }
