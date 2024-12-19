@@ -44,7 +44,7 @@ public class UserController {
     }
     //-----------------------------------------------------------------------------------------------------------
 
-    //2- Actualizar datos de perfil como usuario autenticado.
+    //2- Actualizar nombre y apellido como usuario autenticado.
     //-----------------------------------------------------------------------------------------------------------
     @Operation(summary = "Actualizar datos del perfil", description = "Endpoint para actualizar los datos del perfil. " +
             "El endpoint permite al usuario autenticado actualizar los datos de su perfil." +
@@ -170,6 +170,17 @@ public class UserController {
         userServiceImplementation.softDeleteByAdmin(request, idUser);
 
         return ResponseEntity.ok().body("El usuario con ID = " + idUser + " fue dado de baja con éxito!");
+    }
+    //-----------------------------------------------------------------------------------------------------------
+
+    //Eliminar a un usuario del listado de favoritos
+    //-----------------------------------------------------------------------------------------------------------
+    @DeleteMapping("/favUser/{idUser}")
+    public ResponseEntity<String> deleteFavUser(HttpServletRequest request, @PathVariable Long idUser) {
+
+        userServiceImplementation.deleteFavUser(request, idUser);
+
+        return ResponseEntity.ok().body("El usuario con ID = " + idUser + " fue eliminado de tu lista de favoritos con éxito!");
     }
     //-----------------------------------------------------------------------------------------------------------
 
