@@ -10,6 +10,7 @@ import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -273,6 +274,18 @@ public class UserServiceImplementation implements UserService {
         userRepository.save(user);
     }
     //-----------------------------------------------------------------------------------------------------------
+
+    //Eliminar a un usuario del listado de favoritos
+    @Override
+    @Transactional
+    public void deleteFavUser(HttpServletRequest request, Long idUser) {
+
+        //Obtenemos el usuario autenticado
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        userRepository.deleteUserFromFavList(userSecurityDTO.getId(), idUser);
+    }
+
 
     //Obtener a un Usuario por email
     //-----------------------------------------------------------------------------------------------------------

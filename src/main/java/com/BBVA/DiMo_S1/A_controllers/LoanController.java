@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,7 +31,7 @@ public class LoanController {
             "\n- El monto a invertir debe estar entre $10000 y $10000000"
     )
     @PostMapping("/simulate")
-    public ResponseEntity<Loan> simulateLoan(CreateLoanDTO createLoanDTO) {
+    public ResponseEntity<Loan> simulateLoan(@RequestBody CreateLoanDTO createLoanDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(loanServiceImplementation.simulateLoan(createLoanDTO));
     }
     //-----------------------------------------------------------------------------------------------------------
