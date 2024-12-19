@@ -97,7 +97,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cc = new CorsConfiguration();
         cc.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        cc.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cc.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH","OPTIONS"));
         cc.setAllowedHeaders(List.of("Authorization", "Content-Type", "email", "password", "roles"));
         cc.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
