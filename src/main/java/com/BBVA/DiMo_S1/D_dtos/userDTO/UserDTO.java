@@ -11,15 +11,19 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class UserDTO {
+    private Long id;
     private String firstName;
     private String lastName;
     private String email;
     private LocalDateTime creationDate;
+    private Long role;
 
     public UserDTO(final User user) {
+        this.id = user.getId();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();
         this.creationDate = user.getCreationDate();
+        this.role = user.getRole().getId();
     }
 }

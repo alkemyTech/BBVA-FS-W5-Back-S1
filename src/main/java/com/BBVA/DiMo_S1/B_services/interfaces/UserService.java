@@ -1,9 +1,6 @@
 package com.BBVA.DiMo_S1.B_services.interfaces;
 
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FavUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,4 +36,6 @@ public interface UserService {
 
     //Obtener a un Usuario por email
     FavUserDTO getUserByEmail(HttpServletRequest request, String email);
+
+    UpdateRoleUserDTO updateRoleUserAdmin(HttpServletRequest request, Long idUser, UpdateRoleUserDTO updateRoleUserDTO);
 }

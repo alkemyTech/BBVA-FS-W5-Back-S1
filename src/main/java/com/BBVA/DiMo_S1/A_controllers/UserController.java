@@ -1,10 +1,7 @@
 package com.BBVA.DiMo_S1.A_controllers;
 
 import com.BBVA.DiMo_S1.B_services.implementations.UserServiceImplementation;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FavUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.FullUserDto;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UpdateUserDTO;
-import com.BBVA.DiMo_S1.D_dtos.userDTO.UserDTO;
+import com.BBVA.DiMo_S1.D_dtos.userDTO.*;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_exceptions.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,6 +71,12 @@ public class UserController {
     public ResponseEntity<UpdateUserDTO> userUpdateAdmin(HttpServletRequest request, @PathVariable Long idUser, @RequestBody UpdateUserDTO
             createUserDTO) {
         return ResponseEntity.ok(userServiceImplementation.updateUserAdmin(request, idUser, createUserDTO));
+    }
+
+    @PatchMapping("/admin/updateRole/{idUser}")
+    public ResponseEntity<UpdateRoleUserDTO> userUpdateRoleAdmin(HttpServletRequest request, @PathVariable Long idUser, @RequestBody UpdateRoleUserDTO
+            createUserDTO) {
+        return ResponseEntity.ok(userServiceImplementation.updateRoleUserAdmin(request, idUser, createUserDTO));
     }
     //-----------------------------------------------------------------------------------------------------------
 
