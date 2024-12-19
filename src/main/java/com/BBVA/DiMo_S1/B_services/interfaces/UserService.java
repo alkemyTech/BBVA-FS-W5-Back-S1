@@ -34,6 +34,9 @@ public interface UserService {
     //9- Dar de baja del sistema a un usuario con rol de administrador.
     void softDeleteByAdmin(HttpServletRequest request, Long idUser);
 
+    //Eliminar a un usuario del listado de favoritos
+    void deleteFavUser(HttpServletRequest request, Long idUser);
+
     //Obtener a un Usuario por email
     FavUserDTO getUserByEmail(HttpServletRequest request, String email);
 
