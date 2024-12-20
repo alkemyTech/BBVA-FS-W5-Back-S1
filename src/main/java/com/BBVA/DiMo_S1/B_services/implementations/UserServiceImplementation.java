@@ -1,10 +1,13 @@
 package com.BBVA.DiMo_S1.B_services.implementations;
 
+import com.BBVA.DiMo_S1.B_services.interfaces.RoleService;
 import com.BBVA.DiMo_S1.B_services.interfaces.UserService;
 import com.BBVA.DiMo_S1.C_repositories.AccountRepository;
+import com.BBVA.DiMo_S1.C_repositories.RoleRepository;
 import com.BBVA.DiMo_S1.C_repositories.UserRepository;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.*;
 import com.BBVA.DiMo_S1.D_models.Account;
+import com.BBVA.DiMo_S1.D_models.Role;
 import com.BBVA.DiMo_S1.D_models.User;
 import com.BBVA.DiMo_S1.E_config.JwtService;
 import com.BBVA.DiMo_S1.E_constants.ErrorConstants;
@@ -33,6 +36,9 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    RoleRepository roleRepository;
 
     @Autowired
     JwtService jwtService;
@@ -139,6 +145,32 @@ public class UserServiceImplementation implements UserService {
 
         return updateUserDTO;
     }
+
+    @Override
+    public UpdateRoleUserDTO updateRoleUserAdmin(HttpServletRequest request, Long idUser, UpdateRoleUserDTO updateRoleUserDTO) {
+
+        //Obtenemos el usuario autenticado.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        //Validamos que el usuario autenticado sea administrador.
+        if (!userSecurityDTO.getRole().toUpperCase().equals("ADMIN")) {
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_NOT_ADMIN);
+        }
+
+        //Buscamos al usuario que se quiere actualizar y lanzamos excepción si no existe.
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        Role newRole = roleRepository.findById(updateRoleUserDTO.getRole()).orElseThrow(()->
+                new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO));
+
+        //Actualizamos sus datos.
+        user.setRole(newRole);
+        userRepository.save(user);
+
+        return updateRoleUserDTO;
+    }
+
     //-----------------------------------------------------------------------------------------------------------
 
     //4- Obtener datos de perfil como usuario autenticado.
@@ -257,14 +289,14 @@ public class UserServiceImplementation implements UserService {
         }
 
         //Buscamos al User por ID. Debe no haber sido eliminado de la BD.
-        User user = userRepository.findByIdAndSoftDeleteIsNull(userSecurityDTO.getId())
+        User user = userRepository.findByIdAndSoftDeleteIsNull(idUser)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.USER_NO_ENCONTRADO_O_ELIMINADO));
 
         //Damos de baja al usuario.
         user.setSoftDelete(LocalDateTime.now());
 
         //Damos de baja sus cuentas.
-        List<Account> accountList = accountRepository.getByIdUser(userSecurityDTO.getId());
+        List<Account> accountList = accountRepository.getByIdUser(idUser);
         for (Account account : accountList) {
             account.setSoftDelete(LocalDateTime.now());
             accountRepository.save(account);
