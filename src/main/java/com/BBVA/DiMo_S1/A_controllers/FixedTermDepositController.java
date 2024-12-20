@@ -3,6 +3,7 @@ package com.BBVA.DiMo_S1.A_controllers;
 import com.BBVA.DiMo_S1.B_services.implementations.FixedTermDepositServiceImplementation;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.CreateFixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositResultsDTO;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.ShowSimulatedFixedTermDeposit;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.E_config.JwtService;
@@ -15,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/fixedTerm")
@@ -91,13 +90,8 @@ public class FixedTermDepositController {
     //-----------------------------------------------------------------------------------------------------
 
     @GetMapping("/totals")
-    public ResponseEntity<Map<String, Double>> getTotalCalculations(HttpServletRequest request) {
-        // Validar el token y obtener información del usuario loggeado
-        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+    public ResponseEntity<FixedTermDepositResultsDTO> getFixedTermDepositsInfo(HttpServletRequest request) {
 
-        // Llamar al servicio para calcular los totales
-        Map<String, Double> totals = fixedTermDepositServiceImplementation.getTotalCalculationsFromUser(userSecurityDTO.getId());
-
-        return ResponseEntity.ok(totals);
+        return ResponseEntity.ok(fixedTermDepositServiceImplementation.getFixedTermDepositsInfo(request));
     }
 }

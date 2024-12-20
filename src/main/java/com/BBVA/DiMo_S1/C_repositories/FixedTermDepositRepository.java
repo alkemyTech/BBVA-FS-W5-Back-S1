@@ -16,6 +16,10 @@ public interface FixedTermDepositRepository extends JpaRepository<FixedTermDepos
     @Query("SELECT ftd FROM FixedTermDeposit ftd JOIN FETCH ftd.account ac JOIN FETCH ac.user u WHERE u.id = :idUser")
     List<FixedTermDeposit> getFixedTermDepositByIdUser(@Param("idUser") long idUser);
 
+    @Query("SELECT ftd FROM FixedTermDeposit ftd JOIN FETCH ftd.account ac JOIN FETCH ac.user u WHERE u.id = :idUser " +
+            "AND ftd.settled = :condicional")
+    List<FixedTermDeposit> getFixedTermDepositByIdUserAndSettled(@Param("idUser") long idUser, @Param("condicional") boolean condicional);
+
     @Query("SELECT ftd FROM FixedTermDeposit ftd JOIN FETCH ftd.account ac")
     List<FixedTermDeposit> getFixedTermDepositsWithAccounts();
 

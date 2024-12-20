@@ -6,6 +6,7 @@ import com.BBVA.DiMo_S1.C_repositories.FixedTermDepositRepository;
 import com.BBVA.DiMo_S1.C_repositories.TransactionRepository;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.CreateFixedTermDepositDTO;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositDTO;
+import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.FixedTermDepositResultsDTO;
 import com.BBVA.DiMo_S1.D_dtos.fixedTermDepositDTO.ShowSimulatedFixedTermDeposit;
 import com.BBVA.DiMo_S1.D_dtos.userDTO.UserSecurityDTO;
 import com.BBVA.DiMo_S1.D_models.Account;
@@ -254,5 +255,42 @@ public class FixedTermDepositServiceImplementation implements FixedTermDepositSe
         totals.put("totalGeneral", totalGeneral);
 
         return totals;
+    }
+
+    public FixedTermDepositResultsDTO getFixedTermDepositsInfo(HttpServletRequest request) {
+
+        //Vamos a obtener el User que esta en la sesión.
+        UserSecurityDTO userSecurityDTO = jwtService.validateAndGetSecurity(jwtService.extractToken(request));
+
+        List<FixedTermDeposit> fixedTermDepositList = fixedTermDepositRepository
+                .getFixedTermDepositByIdUserAndSettled(userSecurityDTO.getId(), true);
+
+        FixedTermDepositResultsDTO fixedTermDepositResultsDTO = FixedTermDepositResultsDTO.builder().build();
+
+        if (fixedTermDepositList.size() > 0) {
+
+            double interesGanado = 0;
+
+            double montoInvertido = 0;
+
+            double montoTotal = 0;
+
+            for (FixedTermDeposit fixedTermDeposit : fixedTermDepositList) {
+
+                interesGanado = interesGanado + calcularPlazoFijo(fixedTermDeposit) - fixedTermDeposit.getAmount();
+
+                montoInvertido = montoInvertido + fixedTermDeposit.getAmount();
+
+                montoTotal = montoTotal + calcularPlazoFijo(fixedTermDeposit);
+
+                fixedTermDepositResultsDTO.setInteresAcumulado(interesGanado);
+
+                fixedTermDepositResultsDTO.setTotalInvertido(montoInvertido);
+
+                fixedTermDepositResultsDTO.setTotalGeneral(montoTotal);
+            }
+        }
+
+        return fixedTermDepositResultsDTO;
     }
 }
