@@ -273,23 +273,12 @@ public class AccountServiceImplementation implements AccountService {
     //-----------------------------------------------------------------------------------------------------------
 
     @Override
-    public AccountDTO obetenerPorCbu(String cbu){
-        Account cuentaBuscada = null;
-        List<Account> listaCuentas = accountRepository.findAll();
+    public AccountDTO obetenerPorCbu(String cbu) {
 
-        for( Account cuenta: listaCuentas){
-            if(cuenta.getCbu().equals(cbu)){
-                cuentaBuscada = cuenta;
-            }
-        }
+        Account cuentaBuscada = accountRepository.findByCbuAndSoftDeleteIsNull(cbu)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorConstants.ACCOUNT_NO_ENCONTRADA));
 
-        if(cuentaBuscada == null) {
-            throw new CustomException(HttpStatus.CONFLICT, "ERROR! El CBU ingresasdo no existe");
-        } else {
-            AccountDTO cuentaADevolver = new AccountDTO(cuentaBuscada);
-            return cuentaADevolver;
-        }
-
+        return new AccountDTO(cuentaBuscada);
     }
 
     //-----------------------------------------------------------------------------------------------------------

@@ -12,7 +12,7 @@ public class ErrorConstants {
 
     public static final String DELETE_NO_VALIDO = "ERROR! El User que deseas eliminar ya fue eliminado.";
 
-    public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! El CBU no pertenece a una Account presente en el sistema.";
+    public static final String ACCOUNT_NO_ENCONTRADA = "ERROR! El CBU no pertenece a una cuenta presente en el sistema.";
 
     public static final String ACCOUNT_NO_ENCONTRADA_O_DADA_DE_BAJA = "ERROR! El CBU no pertenece a una cuenta presente en el sistema " +
             "o la misma fue dada de baja.";
@@ -66,7 +66,7 @@ public class ErrorConstants {
 
     public static final String ERROR_BALANCE_NEGATIVO = "ERROR! El deposito debe ser mayor a 0";
 
-    public static final String ERROR_BALANCE_MAYOR_A_DEPOSITO = "ERROR! El deposito no puede ser mayor al limite de transaccion";
+    public static final String ERROR_MOVIMIENTO_MAYOR_LIMITE_TRANSACCION = "ERROR! El monto de la operación no puede ser mayor al limite de transacción.";
 
     public static final String ERROR_NOT_ADMIN = "ERROR! No tiene el rol administrador!";
 

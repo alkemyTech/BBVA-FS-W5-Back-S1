@@ -255,14 +255,17 @@ public class TransactionServiceImplementation implements TransactionService {
                     .findFirst();
         }
 
+        if (transactionDepositDTO.getAmount() > cuenta.get().getTransactionLimit()) {
+
+            throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_MOVIMIENTO_MAYOR_LIMITE_TRANSACCION);
+        }
+
         if (transactionDepositDTO.getAmount() <= 0) {
             throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_NEGATIVO);
+
         } else {
 
             double nuevoBalance = cuenta.get().getBalance() + transactionDepositDTO.getAmount();
-            if (nuevoBalance > cuenta.get().getTransactionLimit()) {
-                throw new CustomException(HttpStatus.CONFLICT, ErrorConstants.ERROR_BALANCE_MAYOR_A_DEPOSITO);
-            }
             cuenta.get().setBalance(nuevoBalance);
             accountRepository.save(cuenta.get());
 
